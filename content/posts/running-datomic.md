@@ -8,7 +8,7 @@ First off, welcome to my brand new blog. I'm a Clojure programmer by day, so thi
 
 I was inspired to start the blog by a [this post on Medium](https://medium.com/@jiyinyiyong/clojurians-please-share-your-knowledges-with-blogs-c674503f54a). The post talks about how Clojure can be hard for beginners, due to the lack of step-by-step guides for common problems. It's from the point of view of a Clojure beginner, but I believe a lot of it applies to any Clojure programmer, no matter how experienced. I've been learning Clojure for a few years, and when I have a problem I still often find myself sifting through Google Groups/Clojurians Slack/GitHub issues, trying to find someone who's previously encountered the same issue. 
 
-In this post, I'll cover something that I've been wrestling with recently - running [Datomic](https://www.datomic.com/) in the cloud as cheaply as possible. 
+In this post, I'll cover something that I've been wrestling with recently - running [Datomic](https://www.datomic.com/) in the cloud as cheaply as possible.
 
 ## What's the Problem?
 
@@ -25,12 +25,36 @@ I wanted to run Datomic in a docker container, for a couple of reasons:
 
 I looked at several platforms for Docker container hosting, including [hyper.sh](https://hyper.sh/) and [sloppy.io](https://sloppy.io/pricing/). Datomic realistically requires 2GB of RAM, which would cost around $15-20 per month. It actually worked out cheaper to rent a whole virtual machine, and run a Docker container on it. The platform I eventually landed on was [DigitalOcean](https://www.digitalocean.com). A VM (droplet in their terminology) with 2GB of RAM costs $10 per month, plus they give you $100 credit to get started. 
 
-Datomic is a bit different to other databases, in that it allows you to choose which underlying storage you want to use. You can choose between AWS's DynamoDB, an SQL database or Cassandra. I decided to go with PostgresQL, because there are plenty of hosting options. I went with [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql), because I was already using Heroku, and they have a free tier. I've never used any other hosted SQL service, so I won't recommend any others, but there are plenty out there.
+Datomic is a bit different to other databases, in that it allows you to choose which underlying storage you want to use. You can choose between AWS's DynamoDB, an SQL database or Cassandra. I decided to go with PostgreSQL, because there are plenty of hosting options. I went with [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql), because I was already using Heroku, and they have a free tier. I've never used any other hosted SQL service, so I won't recommend any others, but there are plenty out there.
 
 # Step-by-step Guide
 
-* We'll start by setting up PostgresQL on Heroku. 
+### Setting up PostgreSQL
 
+* First, make sure you have an app set up on Heroku. If you don't know how to do this, follow [this guide](https://devcenter.heroku.com/articles/getting-started-with-clojure#introduction)
+* Go to [the Heroku Postgres addon page](https://elements.heroku.com/addons/heroku-postgresql)
+* Click "Install Heroku Postgres", and select your app
+* Select the "Hobby Dev" tier and click "Provision"
 
+A Postgres instance should now be running. We'll need the connection details when we set up the Datomic transactor, so let's note them down now. On Heroku, go to your app -> resources tab -> Heroku Postgres -> settings tab -> database credentials. You'll need the host, database, user, port and password later on. 
 
+;; TODO - how to set up DB for Datomic
 
+### Creating a Docker Image
+
+;; TODO
+
+### Creating a DigitalOcean Droplet
+
+* Go to [DigitalOcean](https://www.digitalocean.com/), and create an account
+* Click on "Create", then "Droplets"
+* Choose the 2GB/1vCPU option, and whichever region you want
+* Click "Create"
+* You should now receive an email with the username and password for the droplet
+* You can now SSH to the droplet by running `ssh root@[droplet IP]`, then entering the password
+
+For security, it's recommended to set up SSH keys to access your droplet, rather than using a username and password. If you want to do this, just follow [this guide](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2).
+
+### Starting the Datomic Transactor
+
+;; TODO
