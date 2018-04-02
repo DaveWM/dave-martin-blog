@@ -1,7 +1,7 @@
 ---
 title: "The Cheapskate's Guide to Running Datomic"
 date: 2018-04-02T02:43:48+01:00
-draft: true
+draft: false
 ---
 
 First off, welcome to my brand new blog. I'm a Clojure programmer by day, so this blog will focus pretty much entirely on Clojure. My aim with this blog is to document solutions for any rare problems I come across.
