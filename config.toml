@@ -1,0 +1,15 @@
+baseURL = "http://davesinsightfulobservations.com"
+languageCode = "en-gb"
+title = "Dave's Insightful Observations"
+theme = "vienna"
+
+[Params]
+  twitter = "DWMartin41"
+  github = "DaveWM"
+  reddit = "DaveWM"
+  themecolor = "#000000"
+  contact = "mailto:dwmartin41@gmail.com"
+  subtitle = "Thoughts on Clojure, and programming in general"
+  author = "Dave Martin"
+  bio = "Clojure developer at Funding Circle"
+  avatar = "/images/profile.jpg"
