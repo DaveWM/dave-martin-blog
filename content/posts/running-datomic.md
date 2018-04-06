@@ -76,7 +76,6 @@ GRANT ALL ON TABLE datomic_kvs TO public;
 
 In this step, we'll create a Docker image for our Datomic transactor. 
 
-* Click on "Send License Key" on [https://my.datomic.com](https://my.datomic.com), and you should be sent a license key
 * Create a new directory called `datomic-docker`, and `cd` to it
 * Run `echo "[email]:[datomic download key]" >> .credentials` (you can find your download key [here](https://my.datomic.com))
 * Copy the following to `config/transactor.properties` (you need to fill in the bits in square brackets):
