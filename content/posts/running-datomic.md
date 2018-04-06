@@ -29,6 +29,11 @@ Datomic is a bit different to other databases, in that it allows you to choose w
 
 # Step-by-step Guide
 
+## Prerequisites
+
+* You'll need an account for [https://my.datomic.com](https://my.datomic.com), and a license key for Datomic
+* You'll also need a [Docker Hub](https://hub.docker.com) account to host your Datomic transactor Docker image
+
 ### Setting up PostgreSQL
 
 * First, make sure you have an app set up on Heroku. If you don't know how to do this, follow [this guide](https://devcenter.heroku.com/articles/getting-started-with-clojure#introduction)
@@ -38,17 +43,80 @@ Datomic is a bit different to other databases, in that it allows you to choose w
 
 A Postgres instance should now be running. We'll need the connection details when we set up the Datomic transactor, so let's note them down now. On Heroku, go to your app -> resources tab -> Heroku Postgres -> settings tab -> database credentials. You'll need the host, database, user, port and password later on. 
 
-;; TODO - how to set up DB for Datomic
+### Initialising the DB for Datomic
+
+Before we can use our DB with Datomic, we need to run create the `datomic_kvs` table. Just follow these steps:
+
+* Run `sudo docker run -p 80:80 -e "PGADMIN_DEFAULT_EMAIL=[your email]" -e "PGADMIN_DEFAULT_PASSWORD=[any password]" -d dpage/pgadmin4`
+* Go to [http://localhost](http://localhost) in your web browser, and log in using the email and password you specified
+* Right click on "servers" in the left hand menu, then select Create -> Server
+* Enter the connection details you noted down earlier (or look them up again in Heroku, because you didn't note them down like I told you to :P)
+* Once you've connected to the server, find your DB in the "Databases" list (protip: use ctrl+f), right click on it, and select "Query Tool"
+* Paste in this script (which is bundled with Datomic), and run it:
+
+```
+CREATE TABLE datomic_kvs
+(
+ id text NOT NULL,
+ rev integer,
+ map text,
+ val bytea,
+ CONSTRAINT pk_id PRIMARY KEY (id )
+)
+WITH (
+ OIDS=FALSE
+);
+ALTER TABLE datomic_kvs
+ OWNER TO postgres;
+GRANT ALL ON TABLE datomic_kvs TO postgres;
+GRANT ALL ON TABLE datomic_kvs TO public;
+```
 
 ### Creating a Docker Image
 
-;; TODO
+In this step, we'll create a Docker image for our Datomic transactor. 
+
+* Click on "Send License Key" on [https://my.datomic.com](https://my.datomic.com), and you should be sent a license key
+* Create a new directory called `datomic-docker`, and `cd` to it
+* Run `echo "[email]:[datomic download key]" >> .credentials` (you can find your download key [here](https://my.datomic.com))
+* Copy the following to `config/transactor.properties` (you need to fill in the bits in square brackets):
+
+```
+protocol=sql
+host=[DigitalOcean droplet IP address]
+port=4334
+alt-host=localhost
+sql-url=jdbc:postgresql://[postgres host]:[postgres port]/[postgres DB name]
+sql-user=[postgres user]
+sql-password=[postgres password]
+sql-driver-class=org.postgresql.Driver
+sql-driver-params=ssl=true;sslfactory=org.postgresql.ssl.NonValidatingFactory;
+
+license-key=[datomic license key]
+
+# Recommended settings for -Xmx1g usage, e.g. dev laptops.
+memory-index-threshold=32m
+memory-index-max=256m
+object-cache-max=128m
+```
+
+* Copy this to `Dockerfile`:
+
+```
+FROM pointslope/datomic-pro-starter:0.9.5561
+MAINTAINER [your name] "[your email]"
+CMD ["config/transactor.properties"]
+```
+
+* Run `sudo docker build -t [docker hub username]/[image name] .`
+* Run `sudo docker push [docker hub username]/[image name]`
 
 ### Creating a DigitalOcean Droplet
 
 * Go to [DigitalOcean](https://www.digitalocean.com/), and create an account
 * Click on "Create", then "Droplets"
-* Choose the 2GB/1vCPU option, and whichever region you want
+* Go to the "One-click apps" tab 
+* Choose "Docker 17.09.9-ce on 16.04", and the 2GB/1vCPU size
 * Click "Create"
 * You should now receive an email with the username and password for the droplet
 * You can now SSH to the droplet by running `ssh root@[droplet IP]`, then entering the password
@@ -57,4 +125,9 @@ For security, it's recommended to set up SSH keys to access your droplet, rather
 
 ### Starting the Datomic Transactor
 
-;; TODO
+* SSH to your droplet by running `ssh root@[droplet ip address]`, then entering the password when prompted
+* To start your transactor, run `docker run -p 4334:4334 -p 4335:4335 -v data:/opt/datomic-pro-0.9.5561/data --detach [docker hub username]/[image name]`
+* To verify your container is running, run `docker ps` - you should see a single running container
+
+Congratulations, you've now got your own instance of Datomic running in the cloud!
+
