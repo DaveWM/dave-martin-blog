@@ -6,26 +6,28 @@ draft: false
 
 First off, welcome to my brand new blog. I'm a Clojure programmer by day, so this blog will focus pretty much entirely on Clojure. My main aim with this blog is to document step-by-step solutions for any difficult, or rare, problems I come across.
 
-I was inspired to start the blog by a [this post on Medium](https://medium.com/@jiyinyiyong/clojurians-please-share-your-knowledges-with-blogs-c674503f54a). The post talks about how Clojure can be hard for beginners, due to the lack of step-by-step guides for common problems. It's from the point of view of a Clojure beginner, but I believe a lot of it applies to any Clojure programmer, no matter how experienced. I've been learning Clojure for a few years, and when I have a problem I still often find myself sifting through Google Groups/Clojurians Slack/GitHub issues for different bits of the solution, then attempting to put all the pieces together into something that works for me. This can be quite difficult, and it's my hope that this blog will help out a tiny bit.
+I was inspired to start the blog by [this post on Medium](https://medium.com/@jiyinyiyong/clojurians-please-share-your-knowledges-with-blogs-c674503f54a). The post talks about how Clojure can be hard for beginners, due to the lack of step-by-step guides for common problems. It's from the point of view of a Clojure beginner, but I believe a lot of it applies to any Clojure programmer, no matter how experienced. I've been learning Clojure for a few years, and when I have a problem I still often find myself sifting through Google Groups/Clojurians Slack/GitHub issues for different bits of the solution, then attempting to put all the pieces together into something that works for me. This can be quite difficult, and it's my hope that this blog will help out a tiny bit.
 
-One thing I struggled with recently is getting [Datomic](https://www.datomic.com/) set up as cheaply as possible (i.e. not on AWS). In this post, I'll give a step-by-step guide of how I got it set up.
+One thing I struggled with recently is making a cheap [Datomic](https://www.datomic.com/) setup, so I thought this would be a first post. I'll give you a step-by-step guide of how to get Datomic up and running for $10 per month. 
 
 ## What's the Problem?
 
 Datomic is an immutable database, created by Cognitect. I won't go into detail about Datomic here, or why you should use it (but you definitely should). If you want to learn more about how Datomic works, and the problems it solves, I'd recommend watching Rich Hickey's talk ["Database as a Value"](https://www.youtube.com/watch?v=EKdV1IgAaFc) - if that doesn't convince you to use Datomic, nothing will. 
 
-The problem I had is that running Datomic on AWS is pretty expensive. I initially tried using the scripts bundled with Datomic, which create and run a CloudFormation stack. However, I found after less than a month that I'd been billed over $45, which was too much for me. I then tried using Datomic Cloud, but I again found it was too expensive - I was charged $25 for less than a week. When you're just starting out with Datomic, and don't have anything in production, you don't want to spend this amount of money. You just want something cheap (or free), regardless of how slow it is.
+The problem I had is that running Datomic on AWS is pretty expensive. I initially tried using the scripts bundled with Datomic, which create and run a CloudFormation stack. However, I found after less than a month that I'd been billed over $45, which was too much for me. I then tried using Datomic Cloud, but I again found it was too expensive - I was charged $25 for less than a week. When you're just starting out with Datomic, and don't have anything in production, you don't want to spend that amount of money. You just want a cheap setup, regardless of how slow it is - you can always scale up later.
 
 ## Solution Overview
 
-Datomic is a bit different to most databases, in that the underlying storage is completely decoupled from the process which writes to it (called the "transactor"). I wanted to run the Datomic transactor in a docker container, for a couple of reasons:
+Datomic is a bit different to most databases, in that the underlying storage is completely decoupled from the process which writes to it (called the "transactor"). I wanted to run the Datomic transactor in a docker container, for a few reasons:
 
-* It makes development easier. In theory, you just start the container on your local machine, and it just works.
-* Portability - it should make it easier to change to a different cloud provider, if you ever need to
+* It makes it easier to change to a different hosting provider, if you ever need to
+* It makes creating new environments easier
+* You don't have to worry about having all the correct dependencies installed (e.g. the correct java version)
+* It's more predictable - if the transactor works correctly when you run it in a container, you can be sure
 
-I looked at several platforms for Docker container hosting, including [hyper.sh](https://hyper.sh/) and [sloppy.io](https://sloppy.io/pricing/). Datomic realistically requires 2GB of RAM, which would cost around $15-20 per month. It actually worked out cheaper to rent a whole virtual machine, and run a Docker container on it. The platform I eventually landed on was [DigitalOcean](https://www.digitalocean.com). A VM (droplet in their terminology) with 2GB of RAM costs $10 per month, plus they give you $100 credit to get started. 
+I looked at several platforms for Docker container hosting, including [hyper.sh](https://hyper.sh/) and [sloppy.io](https://sloppy.io/). Datomic realistically requires 2GB of RAM, which would cost around $15-20 per month. It actually worked out cheaper to rent a whole virtual machine, and run a Docker container on it. The platform I eventually landed on was [DigitalOcean](https://www.digitalocean.com). A VM (droplet in their terminology) with 2GB of RAM costs $10 per month, plus they give you $100 credit to get started. 
 
-Datomic is a bit different to other databases, in that it allows you to choose which underlying storage you want to use. You can choose between AWS's DynamoDB, an SQL database or Cassandra. I decided to go with PostgreSQL, because there are plenty of hosting options. I went with [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql), because I was already using Heroku, and they have a free tier. I've never used any other hosted SQL service, so I won't recommend any others, but there are plenty out there.
+You have several choices of underlying storage. You can use AWS's DynamoDB, any SQL database or Apache Cassandra. I decided to go with PostgreSQL, because there are plenty of cheap hosting options. I went with [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql), because I was already using Heroku, and they have a free tier. I've never used any other hosted SQL service, so I can't recommend any others, but there are plenty out there.
 
 # Step-by-step Guide
 
@@ -47,7 +49,7 @@ A Postgres instance should now be running. We'll need the connection details whe
 
 ### Initialising the DB for Datomic
 
-Before we can use our DB with Datomic, we need to run create the `datomic_kvs` table. Just follow these steps:
+Before we can use our DB with Datomic, we need to set up a table that Datomic requires, `datomic_kvs`. To do this, follow these steps:
 
 * Run `sudo docker run -p 80:80 -e "PGADMIN_DEFAULT_EMAIL=[your email]" -e "PGADMIN_DEFAULT_PASSWORD=[any password]" -d dpage/pgadmin4`
 * Go to [http://localhost](http://localhost) in your web browser, and log in using the email and password you specified
@@ -127,8 +129,8 @@ For security, it's recommended to set up SSH keys to access your droplet, rather
 ### Starting the Datomic Transactor
 
 * SSH to your droplet by running `ssh root@[droplet ip address]`, then entering the password when prompted
-* To start your transactor, run `docker run -p 4334:4334 -p 4335:4335 -v data:/opt/datomic-pro-0.9.5561/data --detach [docker hub username]/[image name]`
-* To verify your container is running, run `docker ps` - you should see a single running container
+* To start your transactor, run `docker run -p 4334:4334 -p 4335:4335 -v data:/opt/datomic-pro-0.9.5561/data --net=host --detach [docker hub username]/[image name]`
+* To verify your container is running, run `docker ps` - you should see a single running container. Then, run `curl [droplet ip]:4334`, and you should see "Empty reply from server".
 
 Congratulations, you've now got your own instance of Datomic running in the cloud! Now you just need to add it to your app.
 
@@ -153,6 +155,8 @@ There are 2 possible APIs you can use with Datomic: client or peer. I'll use the
 (Note that the Datomic DB name can be whatever you want.)
 
 That's it! You now have a connection to your Datomic DB.
+
+![Good job!](https://media.giphy.com/media/Yb3d5B1zwuhCo/giphy.gif)
 
 ## Where to go from here
 
