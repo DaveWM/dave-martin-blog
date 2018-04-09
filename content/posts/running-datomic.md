@@ -1,6 +1,6 @@
 ---
 title: "The Cheapskate's Guide to Running Datomic"
-date: 2018-04-02T02:43:48+01:00
+date: 2018-04-09T23:00:00+01:00
 draft: false
 ---
 
