@@ -1,6 +1,6 @@
 baseURL = "https://laughing-lovelace-bd2439.netlify.com/"
 languageCode = "en-gb"
-title = "Dave's Insightful Observations"
+title = "Clojure Conundrums"
 theme = "vienna"
 
 [Params]
@@ -9,7 +9,7 @@ theme = "vienna"
   reddit = "DaveWM"
   themecolor = "#000000"
   contact = "mailto:dwmartin41@gmail.com"
-  subtitle = "Thoughts on Clojure, and programming in general"
+  subtitle = "Helpful guides for all things Clojure(Script)"
   author = "Dave Martin"
   bio = "Clojure developer at Funding Circle"
   avatar = "/images/profile.jpg"
