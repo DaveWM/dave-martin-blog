@@ -4,17 +4,19 @@ date: 2018-04-02T02:43:48+01:00
 draft: false
 ---
 
-First off, welcome to my brand new blog. I'm a Clojure programmer by day, so this blog will focus pretty much entirely on Clojure. My main aim with this blog is to document step-by-step solutions for any difficult, or rare, problems I come across.
+First off, welcome to my brand new blog. I'm a Clojure programmer by day, so this blog will focus pretty much entirely on Clojure (as you probably guessed from the title). My main aim with this blog is to document step-by-step solutions for any difficult, or rare, problems I come across.
 
-I was inspired to start the blog by [this post on Medium](https://medium.com/@jiyinyiyong/clojurians-please-share-your-knowledges-with-blogs-c674503f54a). The post talks about how Clojure can be hard for beginners, due to the lack of step-by-step guides for common problems. It's from the point of view of a Clojure beginner, but I believe a lot of it applies to any Clojure programmer, no matter how experienced. I've been learning Clojure for a few years, and when I have a problem I still often find myself sifting through Google Groups/Clojurians Slack/GitHub issues for different bits of the solution, then attempting to put all the pieces together into something that works for me. This can be quite difficult, and it's my hope that this blog will help out a tiny bit.
+I was inspired to start the blog by [this post on Medium](https://medium.com/@jiyinyiyong/clojurians-please-share-your-knowledges-with-blogs-c674503f54a). The post talks about how Clojure can be hard for beginners, due to the lack of step-by-step guides for common problems. It's from the point of view of a Clojure beginner, but I believe a lot of it applies to any Clojure programmer, no matter how experienced. I've been learning Clojure for a few years, and when I have a problem I still often find myself sifting through Google Groups/Clojurians Slack/GitHub issues for different bits of the solution, then attempting to put all the pieces together into something that works for me. This can be quite difficult, especially for beginners, and sometimes it's preferable to just follow an opinionated tutorial. 
 
-One thing I struggled with recently is making a cheap [Datomic](https://www.datomic.com/) setup, so I thought this would be a first post. I'll give you a step-by-step guide of how to get Datomic up and running for $10 per month. 
+One thing I struggled with recently is making a cheap [Datomic](https://www.datomic.com/) setup, so I thought this would be a good subject for my first post. I'll give you a step-by-step guide of how to get Datomic up and running for $10 per month.
 
 ## What's the Problem?
 
-Datomic is an immutable database, created by Cognitect. I won't go into detail about Datomic here, or why you should use it (but you definitely should). If you want to learn more about how Datomic works, and the problems it solves, I'd recommend watching Rich Hickey's talk ["Database as a Value"](https://www.youtube.com/watch?v=EKdV1IgAaFc) - if that doesn't convince you to use Datomic, nothing will. 
+Datomic is an immutable database, created by Rich Hickey and Cognitect. I want to focus on how to get Datomic up and running, so I'll assume you know a bit about Datomic and how it works. I won't go into detail about how it works, or why you should use it (but you definitely should). If you've never heard of Datomic before, and you want to learn more about the philosophy behind it, and the problems it solves, I'd recommend watching Rich Hickey's talk ["Database as a Value"](https://www.youtube.com/watch?v=EKdV1IgAaFc) - if that doesn't convince you to use it, nothing will. 
 
 The problem I had is that running Datomic on AWS is pretty expensive. I initially tried using the scripts bundled with Datomic, which create and run a CloudFormation stack. However, I found after less than a month that I'd been billed over $45, which was too much for me. I then tried using Datomic Cloud, but I again found it was too expensive - I was charged $25 for less than a week. When you're just starting out with Datomic, and don't have anything in production, you don't want to spend that amount of money. You just want a cheap setup, regardless of how slow it is - you can always scale up later.
+
+![I don't want to spend a lot of money](https://i.imgur.com/OjNqH8L.gif)
 
 ## Solution Overview
 
@@ -25,7 +27,9 @@ Datomic is a bit different to most databases, in that the underlying storage is 
 * You don't have to worry about having all the correct dependencies installed (e.g. the correct java version)
 * It's more predictable - if the transactor works correctly when you run it in a container, you can be sure
 
-I looked at several platforms for Docker container hosting, including [hyper.sh](https://hyper.sh/) and [sloppy.io](https://sloppy.io/). Datomic realistically requires 2GB of RAM, which would cost around $15-20 per month. It actually worked out cheaper to rent a whole virtual machine, and run a Docker container on it. The platform I eventually landed on was [DigitalOcean](https://www.digitalocean.com). A VM (droplet in their terminology) with 2GB of RAM costs $10 per month, plus they give you $100 credit to get started. 
+Luckily, we don't have to build a Docker image from scratch, there's a base image [on GitHub](https://github.com/pointslope/docker-datomic), courtesy of [PointSlope](https://www.pointslope.com/).
+
+I looked at several platforms for Docker container hosting, including [hyper.sh](https://hyper.sh/) and [sloppy.io](https://sloppy.io/). Since the base Docker image above requires a minimum of 1GB or memory, I needed more than 1GB of RAM, which would've cost around $15-20 per month. It actually worked out cheaper to rent a whole virtual machine, and run a Docker container on it. The platform I eventually landed on was [DigitalOcean](https://www.digitalocean.com). A VM (droplet in their terminology) with 2GB of RAM costs $10 per month, plus they give you $100 credit to get started. 
 
 You have several choices of underlying storage. You can use AWS's DynamoDB, any SQL database or Apache Cassandra. I decided to go with PostgreSQL, because there are plenty of cheap hosting options. I went with [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql), because I was already using Heroku, and they have a free tier. I've never used any other hosted SQL service, so I can't recommend any others, but there are plenty out there.
 
@@ -45,7 +49,13 @@ _Note: when you see something in square brackets (like "[db host]"), you need to
 * Click "Install Heroku Postgres", and select your app
 * Select the "Hobby Dev" tier and click "Provision"
 
-A Postgres instance should now be running. We'll need the connection details when we set up the Datomic transactor, so let's note them down now. On Heroku, go to your app -> resources tab -> Heroku Postgres -> settings tab -> database credentials. You'll need the host, database, user, port and password later on. 
+A Postgres instance should now be running. We'll need the connection details when we set up the Datomic transactor, so let's note them down now. On Heroku, go to your app, then the "Resources" tab, then click on "Heroku Postgres". 
+
+![Resources tab](https://i.imgur.com/EbIuFOQ.png)
+
+Now click on the "Settings" tab -> database credentials. You'll need the host, database, user, port and password later on. 
+
+![Postgres settings tab](https://i.imgur.com/4gxRlcl.png)
 
 ### Initialising the DB for Datomic
 
@@ -78,7 +88,7 @@ GRANT ALL ON TABLE datomic_kvs TO public;
 
 ### Creating a Docker Image
 
-In this step, we'll create a Docker image for our Datomic transactor. 
+In this step, we'll create a Docker image for our Datomic transactor, using [pointslope/datomic-pro-starter](https://hub.docker.com/r/pointslope/datomic-pro-starter/) as the base image. 
 
 * Create a new directory called `datomic-docker`, and `cd` to it
 * Run `echo "[email]:[datomic download key]" >> .credentials` (you can find your download key [here](https://my.datomic.com))
@@ -121,8 +131,7 @@ CMD ["config/transactor.properties"]
 * Go to the "One-click apps" tab 
 * Choose "Docker 17.09.9-ce on 16.04", and the 2GB/1vCPU size
 * Click "Create"
-* You should now receive an email with the username and password for the droplet
-* You can now SSH to the droplet by running `ssh root@[droplet IP]`, then entering the password
+* Once you've received the username and password via email, you should be able to SSH to the droplet by running `ssh [user]@[droplet IP]` then entering the password
 
 For security, it's recommended to set up SSH keys to access your droplet, rather than using a username and password. If you want to do this, just follow [this guide](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2).
 
@@ -166,4 +175,4 @@ If you're writing a large app, I'd definitely recommend using either [Mount](htt
 
 ## Wrapping up
 
-I hope you've found this post useful. If you've spotted any inaccuracies, or you'd just like to congratulate me on what an excellent post this is, feel free to email me at [dwmartin41@gmail.com](mailto:dwmartin41@gmail.com). Thanks for reading.
+I hope you've found this post useful. If you've spotted any inaccuracies (euphemism for "glaring security flaws"), or you'd just like to congratulate me on what an excellent post this is, feel free to email me at [dwmartin41@gmail.com](mailto:dwmartin41@gmail.com). Thanks for reading.
