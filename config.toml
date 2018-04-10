@@ -1,4 +1,4 @@
-baseURL = "https://laughing-lovelace-bd2439.netlify.com/"
+baseURL = "http://clojure-conundrums.co.uk/"
 languageCode = "en-gb"
 title = "Clojure Conundrums"
 theme = "vienna"
