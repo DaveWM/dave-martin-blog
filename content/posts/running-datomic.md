@@ -14,9 +14,9 @@ One thing I struggled with recently is making a cheap [Datomic](https://www.dato
 
 Datomic is an immutable database, created by Rich Hickey and Cognitect. I want to focus on how to get Datomic up and running, so I'll assume you know a bit about Datomic and how it works. I won't go into detail about how it works, or why you should use it (but you definitely should). If you've never heard of Datomic before, and you want to learn more about the philosophy behind it, and the problems it solves, I'd recommend watching Rich Hickey's talk ["Database as a Value"](https://www.youtube.com/watch?v=EKdV1IgAaFc) - if that doesn't convince you to use it, nothing will. 
 
-The problem I had is that running Datomic on AWS is pretty expensive. I initially tried using the scripts bundled with Datomic, which create and run a CloudFormation stack. However, I found after less than a month that I'd been billed over $45, which was too much for me. I then tried using Datomic Cloud, but I again found it was too expensive - I was charged $25 for less than a week. When you're just starting out with Datomic, and don't have anything in production, you don't want to spend that amount of money. You just want a cheap setup, regardless of how slow it is - you can always scale up later.
+First, some background. I had written an app, the backend of which used Datomic. I wanted to set up a very basic "production" environment for alpha testing. I therefore wanted to a way to run Datomic cheaply, but in such a way that I could easily scale it up. This ruled out running Datomic in [dev mode](https://docs.datomic.com/on-prem/dev-setup.html).
 
-![I don't want to spend a lot of money](https://i.imgur.com/OjNqH8L.gif)
+I initially tried using the scripts bundled with Datomic, which create and run a CloudFormation stack on AWS. However, I found after less than a month that I'd been billed over $45. I then tried using Datomic Cloud instead, but I again found it was quite expensive - I was charged $25 for less than a week. When you're just starting out with an app, you don't want to be paying this much (or at least I didn't). I therefore set out to create a more "affordable" Datomic setup.
 
 ## Solution Overview
 
@@ -27,7 +27,7 @@ Datomic is a bit different to most databases, in that the underlying storage is 
 * You don't have to worry about having all the correct dependencies installed (e.g. the correct java version)
 * It's more predictable - if the transactor works correctly when you run it in a container, you can be sure
 
-Luckily, we don't have to build a Docker image from scratch, there's a base image [on GitHub](https://github.com/pointslope/docker-datomic), courtesy of [PointSlope](https://www.pointslope.com/).
+Luckily, we don't have to build a Docker image from scratch, there's a [base image on GitHub](https://github.com/pointslope/docker-datomic), courtesy of [PointSlope](https://www.pointslope.com/).
 
 I looked at several platforms for Docker container hosting, including [hyper.sh](https://hyper.sh/) and [sloppy.io](https://sloppy.io/). Since the base Docker image above requires a minimum of 1GB or memory, I needed more than 1GB of RAM, which would've cost around $15-20 per month. It actually worked out cheaper to rent a whole virtual machine, and run a Docker container on it. The platform I eventually landed on was [DigitalOcean](https://www.digitalocean.com). A VM (droplet in their terminology) with 2GB of RAM costs $10 per month, plus they give you $100 credit to get started. 
 
