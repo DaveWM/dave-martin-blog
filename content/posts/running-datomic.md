@@ -4,23 +4,23 @@ date: 2018-04-09T23:00:00+01:00
 draft: false
 ---
 
-First off, welcome to my brand new blog. I'm a Clojure programmer by day, so this blog will focus pretty much entirely on Clojure (as you probably guessed from the title). My main aim with this blog is to document step-by-step solutions for any difficult, or rare, problems I come across.
+First off, welcome to my brand new blog. I'm a Clojure programmer by day, so this blog will focus pretty much entirely on Clojure (as you probably guessed from the name). My main aim with this blog is to document step-by-step solutions for any difficult, or rare, problems I come across.
 
 I was inspired to start the blog by [a post on Medium](https://medium.com/@jiyinyiyong/clojurians-please-share-your-knowledges-with-blogs-c674503f54a). The post talks about how Clojure can be hard for beginners, due to the lack of step-by-step guides for common problems. It's from the point of view of a Clojure beginner, but I believe a lot of it applies to any Clojure programmer, no matter how experienced. I've been learning Clojure for a few years, and when I have a problem I still often find myself sifting through Google Groups/Clojurians Slack/GitHub issues for different bits of the solution, then attempting to put all the pieces together into something that works for me. This can be quite difficult, especially for beginners, and sometimes it's preferable to just follow an opinionated tutorial. 
 
-One thing I struggled with recently is making a cheap [Datomic](https://www.datomic.com/) setup, so I thought this would be a good subject for my first post. I'll give you a step-by-step guide of how to get Datomic up and running for $10 per month.
+One thing I struggled with recently is making a cheap [Datomic](https://www.datomic.com/) setup, so I thought this would be a good subject for my first post.
 
 ## What's the Problem?
 
 Datomic is an immutable database, created by Rich Hickey and Cognitect. I want to focus on how to get Datomic up and running, so I'll assume you know a bit about Datomic and how it works. I won't go into detail about how it works, or why you should use it (but you definitely should). If you've never heard of Datomic before, and you want to learn more about the philosophy behind it, and the problems it solves, I'd recommend watching Rich Hickey's talk ["Database as a Value"](https://www.youtube.com/watch?v=EKdV1IgAaFc) - if that doesn't convince you to use it, nothing will. 
 
-First, some background. I had written an app, the backend of which used Datomic. I wanted to set up a very basic "production" environment for alpha testing. I was looking to run Datomic cheaply, but in such a way that I could scale it up without too much effort. This ruled out running Datomic in [dev mode](https://docs.datomic.com/on-prem/dev-setup.html).
+First, some background. I had been writing an app, the backend of which used Datomic. The app wasn't quite ready to be released, but I wanted to set up a very basic production-like environment for testing. I was therefore looking to run Datomic cheaply, but in such a way that I could scale it up without too much effort. This ruled out running Datomic in [dev mode](https://docs.datomic.com/on-prem/dev-setup.html).
 
-I initially tried using the scripts bundled with Datomic, which create and run a CloudFormation stack on AWS. However, I found after less than a month that I'd been billed over $45. I then tried using Datomic Cloud instead, but I again found it was quite expensive - I was charged $25 for less than a week. When you're just starting out with an app, you don't want to be paying this much (or at least I didn't). I therefore set out to create a more "affordable" Datomic setup.
+I initially tried using the scripts bundled with Datomic, which create and run a CloudFormation stack on AWS. However, I found after less than a month that I'd been billed over $45. I then tried using Datomic Cloud instead, but I again found it was quite expensive - I was charged $20 for less than a week. When you're just starting out with an app, you don't want to be paying this much (or at least I didn't). I therefore set out to create a more "affordable" Datomic setup.
 
 ## Solution Overview
 
-Datomic is a bit different to most databases, in that the underlying storage is completely decoupled from the process which writes to it (called the "transactor"). I wanted to run the Datomic transactor in a Docker container, for a few reasons:
+Datomic is a bit different to most databases, in that the underlying storage is completely decoupled from the process which writes to it, called the "transactor". I wanted to run the transactor in a Docker container, for a few reasons:
 
 * It makes it easier to change to a different hosting provider, if you ever need to
 * It makes creating new environments easier
