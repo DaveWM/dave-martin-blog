@@ -6,7 +6,7 @@ draft: false
 
 First off, welcome to my brand new blog. I'm a Clojure programmer by day, so this blog will focus pretty much entirely on Clojure (as you probably guessed from the title). My main aim with this blog is to document step-by-step solutions for any difficult, or rare, problems I come across.
 
-I was inspired to start the blog by [this post on Medium](https://medium.com/@jiyinyiyong/clojurians-please-share-your-knowledges-with-blogs-c674503f54a). The post talks about how Clojure can be hard for beginners, due to the lack of step-by-step guides for common problems. It's from the point of view of a Clojure beginner, but I believe a lot of it applies to any Clojure programmer, no matter how experienced. I've been learning Clojure for a few years, and when I have a problem I still often find myself sifting through Google Groups/Clojurians Slack/GitHub issues for different bits of the solution, then attempting to put all the pieces together into something that works for me. This can be quite difficult, especially for beginners, and sometimes it's preferable to just follow an opinionated tutorial. 
+I was inspired to start the blog by [a post on Medium](https://medium.com/@jiyinyiyong/clojurians-please-share-your-knowledges-with-blogs-c674503f54a). The post talks about how Clojure can be hard for beginners, due to the lack of step-by-step guides for common problems. It's from the point of view of a Clojure beginner, but I believe a lot of it applies to any Clojure programmer, no matter how experienced. I've been learning Clojure for a few years, and when I have a problem I still often find myself sifting through Google Groups/Clojurians Slack/GitHub issues for different bits of the solution, then attempting to put all the pieces together into something that works for me. This can be quite difficult, especially for beginners, and sometimes it's preferable to just follow an opinionated tutorial. 
 
 One thing I struggled with recently is making a cheap [Datomic](https://www.datomic.com/) setup, so I thought this would be a good subject for my first post. I'll give you a step-by-step guide of how to get Datomic up and running for $10 per month.
 
@@ -20,12 +20,12 @@ I initially tried using the scripts bundled with Datomic, which create and run a
 
 ## Solution Overview
 
-Datomic is a bit different to most databases, in that the underlying storage is completely decoupled from the process which writes to it (called the "transactor"). I wanted to run the Datomic transactor in a docker container, for a few reasons:
+Datomic is a bit different to most databases, in that the underlying storage is completely decoupled from the process which writes to it (called the "transactor"). I wanted to run the Datomic transactor in a Docker container, for a few reasons:
 
 * It makes it easier to change to a different hosting provider, if you ever need to
 * It makes creating new environments easier
 * You don't have to worry about having all the correct dependencies installed (e.g. the correct java version)
-* It's more predictable - if the transactor works correctly when you run it in a container, you can be sure
+* It's more predictable - if the container works correctly once, you can be sure it'll work every time
 
 Luckily, we don't have to build a Docker image from scratch, there's a [base image on GitHub](https://github.com/pointslope/docker-datomic), courtesy of [PointSlope](https://www.pointslope.com/).
 
@@ -40,7 +40,8 @@ _Note: when you see something in square brackets (like "[db host]"), you need to
 ## Prerequisites
 
 * You'll need an account for [https://my.datomic.com](https://my.datomic.com), and a license key for Datomic
-* You'll also need a [Docker Hub](https://hub.docker.com) account to host your Datomic transactor Docker image
+* You need [Docker](https://docs.docker.com/install/) installed
+* You'll also need a [Docker Hub](https://hub.docker.com) account
 
 ### Setting up PostgreSQL
 
@@ -137,7 +138,7 @@ For security, it's recommended to set up SSH keys to access your droplet, rather
 
 ### Starting the Datomic Transactor
 
-* SSH to your droplet by running `ssh root@[droplet ip address]`, then entering the password when prompted
+* SSH to your droplet by running `ssh root@[droplet ip address]`, then enter the password when prompted
 * To start your transactor, run `docker run -p 4334:4334 -p 4335:4335 -v data:/opt/datomic-pro-0.9.5561/data --net=host --detach [docker hub username]/[image name]`
 * To verify your container is running, run `docker ps` - you should see a single running container. Then, run `curl [droplet ip]:4334`, and you should see "Empty reply from server".
 
