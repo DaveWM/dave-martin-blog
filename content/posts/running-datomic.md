@@ -146,12 +146,11 @@ Congratulations, you've now got your own instance of Datomic running in the clou
 
 ### Using Datomic in your app
 
-There are 2 possible APIs you can use with Datomic: client or peer. I'll use the peer API here, mainly because it's easier to set up.
+There are 2 possible APIs you can use with Datomic: [client or peer](https://docs.datomic.com/on-prem/clients-and-peers.html). I'll use the peer API here, mainly because it's slightly easier to get started with.
 
-* If you're making a new app, run `lein new [app name]`
+* If you're starting a new project, run `lein new [app name]`
 * Add Datomic as a dependency in `project.clj`, by adding `[com.datomic/datomic-pro "0.9.5561"]` to `:dependencies`. Note that the transactor we're running is version 0.9.5561, so it's best to use this version in your app as well, although later versions do seem to work.
-* Add the following code to your app:
-
+* Add the following code (or run it in the REPL):
 ```
 (ns my-app.core
   (:require [datomic.api :as d]))
@@ -171,8 +170,6 @@ That's it! You now have a connection to your Datomic DB.
 ## Where to go from here
 
 If you're new to Datomic, have a look through the [official getting started guide](https://docs.datomic.com/on-prem/peer-getting-started.html). You should also check out [Day of Datomic](https://github.com/Datomic/day-of-datomic), and [Learn Datalog Today](http://www.learndatalogtoday.org/).
-
-If you're writing a large app, I'd definitely recommend using either [Mount](https://github.com/tolitius/mount), [Component](https://github.com/stuartsierra/component), or [Integrant](https://github.com/weavejester/integrant) to manage your connection state.
 
 ## Wrapping up
 
