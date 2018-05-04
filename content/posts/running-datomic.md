@@ -16,6 +16,8 @@ Datomic is an immutable database, created by Rich Hickey and Cognitect. I want t
 
 First, some background. I had been writing an app, the backend of which used Datomic. The app wasn't quite ready to be released, but I wanted to set up a very basic production-like environment for testing. I was therefore looking to run Datomic cheaply, but in such a way that I could scale it up without too much effort. This ruled out running Datomic in [dev mode](https://docs.datomic.com/on-prem/dev-setup.html).
 
+(EDIT: [Dustin Getz](http://www.dustingetz.com/) pointed out to me that it's alright to use dev mode when you're just starting out with Datomic. However, when you want to scale your application, you'll have to [backup your data](https://docs.datomic.com/on-prem/backup.html), create a full datomic instance, then restore your data to that)
+
 I initially tried using the scripts bundled with Datomic, which create and run a CloudFormation stack on AWS. However, I found after less than a month that I'd been billed over $45. I then tried using Datomic Cloud instead, but I again found it was quite expensive - I was charged $20 for less than a week. When you're just starting out with an app, you don't want to be paying this much (or at least I didn't). I therefore set out to create a more "affordable" Datomic setup.
 
 ## Solution Overview
