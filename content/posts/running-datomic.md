@@ -151,8 +151,25 @@ Congratulations, you've now got your own instance of Datomic running in the clou
 There are 2 possible APIs you can use with Datomic: [client or peer](https://docs.datomic.com/on-prem/clients-and-peers.html). I'll use the peer API here, mainly because it's slightly easier to get started with.
 
 * If you're starting a new project, run `lein new [app name]`
+* Add the `my.datomic.com` repository to your `project.clj`:
+
+```
+:repositories {"my.datomic.com" {:url "https://my.datomic.com/repo"
+                                 :creds :gpg}}
+```
+
+* Add the following to `~/.lein/profiles.clj`:
+
+```
+{:user {...}
+ :auth {:repository-auth {#"my\.datomic\.com" {:username [email]
+                                               :password [datomic download key]}}}}
+```
+(If you would prefer to encrypt these credentials, follow the guide [in the Leiningen docs](https://github.com/technomancy/leiningen/blob/master/doc/DEPLOY.md#gpg))
+
 * Add Datomic as a dependency in `project.clj`, by adding `[com.datomic/datomic-pro "0.9.5561"]` to `:dependencies`. Note that the transactor we're running is version 0.9.5561, so it's best to use this version in your app as well, although later versions do seem to work.
 * Add the following code (or run it in the REPL):
+
 ```
 (ns my-app.core
   (:require [datomic.api :as d]))
@@ -163,6 +180,7 @@ There are 2 possible APIs you can use with Datomic: [client or peer](https://doc
 
 (def connection (d/connect db-uri))
 ```
+
 (Note that the Datomic DB name can be whatever you want.)
 
 That's it! You now have a connection to your Datomic DB.
