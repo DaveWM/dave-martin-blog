@@ -168,6 +168,7 @@ There are 2 possible APIs you can use with Datomic: [client or peer](https://doc
 (If you would prefer to encrypt these credentials, follow the guide [in the Leiningen docs](https://github.com/technomancy/leiningen/blob/master/doc/DEPLOY.md#gpg))
 
 * Add Datomic as a dependency in `project.clj`, by adding `[com.datomic/datomic-pro "0.9.5561"]` to `:dependencies`. Note that the transactor we're running is version 0.9.5561, so it's best to use this version in your app as well, although later versions do seem to work.
+* Add the JDBC Postgres drivers as a dependency, by adding `[org.postgresql/postgresql "9.3-1102-jdbc41"]` to `:dependencies` in `project.clj`.
 * Add the following code (or run it in the REPL):
 
 ```
