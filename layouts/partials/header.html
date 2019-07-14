@@ -39,6 +39,21 @@
   {{ if eq .URL "/" }}
   <link href="{{ .RSSLink }}" rel="alternate" type="application/rss+xml" title="{{ .Site.Title }}" />
   {{ end }}
+  <!-- Fathom - simple website analytics - https://github.com/usefathom/fathom -->
+  <script>
+    (function(f, a, t, h, o, m){
+      a[h]=a[h]||function(){
+	(a[h].q=a[h].q||[]).push(arguments)
+      };
+      o=f.createElement('script'),
+      m=f.getElementsByTagName('script')[0];
+      o.async=1; o.src=t; o.id='fathom-script';
+      m.parentNode.insertBefore(o,m)
+    })(document, window, '//stats.lobster-writer.co.uk/tracker.js', 'fathom');
+    fathom('set', 'siteId', 'JHTIL');
+    fathom('trackPageview');
+  </script>
+  <!-- / Fathom -->
 </head>
 <body>
     <header class="global-header"  style="background-color: black">
