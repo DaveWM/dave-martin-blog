@@ -4,7 +4,9 @@ date: 2019-08-14T00:00:00+01:00
 draft: true
 ---
 
-In this blog post, I'll walk you through how to create a Kafka Streams application in an idiomatic Clojure style. I won't assume any knowledge of Kafka or Kafka Streams, but if you've never heard of them before I'd check out Confluent's [introduction to Kafka Streams](https://www.confluent.io/blog/introducing-kafka-streams-stream-processing-made-simple/), and also the [Kafka Streams docs](https://kafka.apache.org/documentation/streams/). Kafka can be thought of as a persistent, highly scalable, distributed message queue. Kafka stores all messages in "topics", which can be produced to and consumed from. Kafka Streams is an abstraction on top of Kafka, which treats topics as a reactive stream of data onto which you can apply transformations (`map`, `filter`, etc.). It also gives you a way performing stateful aggregations, in such a way that your application can be safely restarted. 
+In this blog post, I'll walk you through how to create a Kafka Streams application in an idiomatic Clojure style. I won't assume any knowledge of Kafka or Kafka Streams, but if you've never heard of them before this post may be a bit overwhelming - I'd check out Confluent's [introduction to Kafka Streams](https://www.confluent.io/blog/introducing-kafka-streams-stream-processing-made-simple/), and also the [Kafka Streams docs](https://kafka.apache.org/documentation/streams/). 
+
+Kafka can be thought of as a persistent, highly scalable, distributed message queue. Kafka stores all messages in "topics", which can be produced to and consumed from. Kafka Streams is an abstraction on top of Kafka, which treats topics as a reactive stream of data onto which you can apply transformations (`map`, `filter`, etc.). It also gives you a way performing stateful aggregations, in such a way that your application can be safely restarted. 
 
 The Java API for Kafka Streams is very powerful, but has a few drawbacks. It gives you a mutable [StreamsBuilder](http://kafka.apache.org/23/javadoc/org/apache/kafka/streams/StreamsBuilder.html) object, on which you call methods like `.map(...)` and `.filter(...)`. You use this builder object to build a [Topology](https://kafka.apache.org/23/javadoc/org/apache/kafka/streams/Topology.html), a logical representation of your application as a graph of processing nodes. You then use the `Topology` to initialise a [KafkaStreams](http://kafka.apache.org/23/javadoc/org/apache/kafka/streams/KafkaStreams.html) object, which executes the topology's logic. We'll develop an application in this style using the [Jackdaw](https://github.com/FundingCircle/jackdaw) library, a Clojure library for Kafka, and then evolve it into a more idiomatic, data-driven style. All the code I'm going to show you is in [this walkthrough repo](https://github.com/DaveWM/kafka-streams-the-clojure-way), so clone it now if you'd like to follow along. 
 
@@ -35,8 +37,9 @@ We'll start by creating the `purchase-made` and `large-transaction-made` topics.
 ;; create the "purchase-made" and "large-transaction-made" topics
 (ja/create-topics! admin-client [purchase-made-topic large-transaction-made-topic])
 ```
+By the way - all the commands we're going to run are in the comment block at the bottom of the `kafka-streams-the-clojure-way.core` namespace. 
 
-We now need to produce some dummy messages onto the `purchase-made` topic. To do this, we’ll create a `Producer` object and pass it to Jackdaw's `produce!` function.  In production code for an API, you’d most likely create a `Producer` when the application starts up, then call `produce!` in the appropriate request handler function. For now, let’s just pretend that we've made a few purchases by producing some messages to the `purchase-made` topic from the repl. These messages are going to look like this:
+We now need to produce some dummy messages onto the `purchase-made` topic. These messages are going to look like this:
 
 ```
 {:id 1
@@ -45,43 +48,46 @@ We now need to produce some dummy messages onto the `purchase-made` topic. To do
  :quantity 5}
 ```
 
-Now we're going to produce a few dummy messages to the `purchase-made` topic. We've already got a `make-purchase!` function defined for us in the `kafka-streams-the-clojure-way.core` namespace, so just run these commands: 
+We've already got a `make-purchase!` function defined for us in the `kafka-streams-the-clojure-way.core` namespace, so just run these commands: 
 
-```
+```clojure
 ;; Make a few dummy purchases
 (make-purchase! 10)
 (make-purchase! 500)
 (make-purchase! 50)
 (make-purchase! 1000)
 ```
+If you're interested in how `make-purchase!` works, check out the code in the walkthrough repo. It uses the Kafka (not Kafka _Streams_) API, so I'll just gloss over it here.
 
  You should see in the [fast-data-dev UI](http://localhost:3030/kafka-topics-ui/#/cluster/fast-data-dev/topic/n/purchase-made/) that messages appear in the topic. Now we have a topic with some dummy data in it, we can start writing our Kafka Streams topology. This is already defined in the walkthrough repo, here's the code:
 
 ```
 (defn simple-topology [builder]
-  (-> ;; Read from the purchase-made topic
+  (-> ;; Read the purchase-made topic into a KStream
       (js/kstream builder purchase-made-topic)
-      ;; Filter for purchases greater than £100
+      ;; Filter the KStream for purchases greater than £100
       (js/filter (fn [[_ purchase]]
                    (<= 100 (:amount purchase))))
       ;; Remove all but the :amount and :user-id fields from the message.
-	  ;; Note that the function passed to map takes and returns a tuple of [key value].
+      ;; Note that the function passed to map takes and returns a tuple of [key value].
       (js/map (fn [[key purchase]]
                 [key (select-keys purchase [:amount :user-id])]))
-	  ;; Write to the large-transaction-made topic
-      (js/to large-transaction-made-topic)))
-	  
-(defn start! [topology-fn]
+      ;; Write our KStream to the large-transaction-made topic
+      (js/to large-transaction-made-topic))) 
+
+(defn start! []
+  "Starts the simple topology"
   (let [builder (js/streams-builder)]
-    (topology-fn builder)
+    (simple-topology builder)
     (doto (js/kafka-streams builder kafka-config)
       (js/start))))
 
 (defn stop! [kafka-streams-app]
+  "Stops the given KafkaStreams application"
   (js/close kafka-streams-app))
 ```
 
-Run `(start! simple-topology)` in the repl to start the topology. You should shortly see messages appear on the `large-transaction-made` topic. Magic! Try producing some more messages to the `purchase-made` topic, and your topology should pick them up and process them immediately. When you're ready to move on, run `(stop!)` to stop the topology.
+Run `(def app (start!))` in the repl to start the topology. You should shortly see messages appear on the `large-transaction-made` topic. Magic! Try producing some more messages to the `purchase-made` topic, and your topology should pick them up and process them immediately. When you're ready to move on, run `(stop! app)` to stop the topology.
 
 
 ## Introducing Transducers
@@ -90,11 +96,12 @@ Run `(start! simple-topology)` in the repl to start the topology. You should sho
 We’ve made a good start, but there are a few problems with our code at the moment. One is that our code is not as easy to test as it could be. We can’t directly test the logic of our topology, because it’s tied to the Kafka Streams API. You can use Kafka's [TopologyTestDriver](https://kafka.apache.org/11/javadoc/org/apache/kafka/streams/TopologyTestDriver.html) to run your topology in memory, but this can be quite cumbersome. It would be much easier if we could express our topology's logic as pure functions, and then then test them. Secondly, our code isn’t very composable. If you have 2 separate topologies, there is no easy way of merging them together. Thirdly, the code is tied to a specific context - Kafka Streams. If you want to re-use the same logic for transforming, for example, a core.async channel you’d be forced to re-write it. 
 
 
-To alleviate these problems, we’re going to use [transducers](https://clojure.org/reference/transducers). Transducers are "a powerful and composable way to build algorithmic transformations that you can reuse in many contexts”. If you’re not familiar with them already, you may want to check out [this introductory blog post](http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming). Let’s write a transducer that captures the logic of our topology:
+To alleviate these problems, we’re going to use [transducers](https://clojure.org/reference/transducers). Transducers are "a powerful and composable way to build algorithmic transformations that you can reuse in many contexts”. Basically, they allow you to encapsulate the logic of transforming a stream of data, without specific knowledge of what the stream _is_. The stream could be a seq, a core.async channel, or a Kafka topic. If you’re not familiar with them already, you may want to check out [this introductory blog post](http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming). Let’s write a transducer that captures the logic of our topology:
 
 ```
 (def purchase-made-transducer
   (comp
+    ;; Note that each step takes a [key value] tuple
     (filter (fn [[_ purchase]]
               (<= 100 (:amount purchase))))
     (map (fn [[key purchase]]
@@ -106,11 +113,11 @@ We can easily test the transducer in the repl like this:
 ```
 (into []
       purchase-made-transducer
-      [[1 {:purchase-id 1 :user-id 2 :amount 10}]
-       [3 {:purchase-id 3 :user-id 4 :amount 500}]])
+      [[1 {:purchase-id 1 :user-id 2 :amount 10 :quantity 1}]
+       [3 {:purchase-id 3 :user-id 4 :amount 500 :quantity 100}]])
 ```
 
-We've successfully isolated the logic of our topology as a pure function. This enables us to easily test our topology's logic. Now we'll update our topology to use this transducer. We're going to introduce the `transduce-stream` function here - you don't need to know exactly how it works, only that it applies a transducer to a `KStream`.
+We've successfully isolated the logic of our topology as a pure function. This enables us to easily test our topology's logic. Now we'll update our topology to use this transducer. We're going to use the `transduce-stream` function here - you don't need to know exactly how it works, only that it applies a transducer to a `KStream`.
 
 ```
 (defn build-topology-with-transducer [builder]
@@ -133,19 +140,17 @@ Unfortunately, your boss now comes to you with another requirement (as they alwa
  ```
 
 
-We’ll need to apply a transducer to the `humble-donation-made`, then use the Kafka Streams `merge` function to merge it with the `purchase-made` stream. Let's start with the transducer for the `humble-donation-made` topic:
+We’ll need to create a `KStream` from the `humble-donation-made` topic, apply a transducer to it, then use Jackdaw's `merge` function to merge it with the `KStream` from our previous topology. Let's start with the transducer for the `humble-donation-made` topic:
 ```
 (def humble-donation-made-transducer
   (comp
+    ;; Again, each step takes a [key value] tuple
     (filter (fn [[_ donation]]
               (<= 10000 (:donation-amount-cents donation))))
     (map (fn [[key donation]]
            [key {:user-id (:user-id donation)
                  :amount (int (/ (:donation-amount-cents donation) 100))}]))))
 ```
-
-
-
 
 Now for the topology itself, this is what the code looks like:
 
@@ -164,26 +169,32 @@ This will work, but we’ve re-introduced all the problems we had before we star
 
 ## Introducing Willa
 
-[Willa](https://github.com/DaveWM/willa) is just such a library. It allows you to express your topology as data and functions, rather than using the mutable `StreamsBuilder` API. Full disclosure - I’m the author of Willa, so if you’re looking for an unbiased critique of it, I’d just stop reading now. Let’s see how it would affect our code. We’ll start by defining all our topics and streams. Willa calls these things “entities”, and you define them like so:
+[Willa](https://github.com/DaveWM/willa) is just such a library. It allows you to express your topology as data and functions, rather than using the mutable `StreamsBuilder` API. Full disclosure - I’m the author of Willa, so if you’re looking for an unbiased critique of it, I’d just stop reading now. Let’s see how it would affect our code. We’ll start by defining all our topics and `KStream`s. In Willa, these are called "entities". We first need to construct a map of entity id to entity config, like so:
 
 ```
 (def entities
-  {:topic/purchase-made (assoc purchase-made-topic ::w/entity-type :topic) ;; We just need to add an entity type to our existing topic config
+  ;; We'll define our topic entities first
+  ;; For the values, we just need to add the ::w/entity-type to our existing topic configs
+  {:topic/purchase-made (assoc purchase-made-topic ::w/entity-type :topic)
    :topic/humble-donation-made (assoc humble-donation-made-topic ::w/entity-type :topic)
    :topic/large-transaction-made (assoc large-transaction-made-topic ::w/entity-type :topic)
-
+   
+   ;; We now define our KStreams
+   ;; This is where we define the transducers we apply to the KStream, as the ::w/xform key
    :stream/large-purchase-made {::w/entity-type :kstream
                                 ::w/xform purchase-made-transducer}
    :stream/large-donation-made {::w/entity-type :kstream
                                 ::w/xform humble-donation-made-transducer}})
 ```
 
-So far so good. We now need to define how our topics and streams relate to each other - how the data flows through our topology. Willa models a topology as a graph (a DAG) of entities. You express this as a vector of tuples. Each tuple has 2 elements, each an entity id, and represents a directed edge on the graph. Willa calls this a “workflow”. Our workflow looks like this:
+So far so good. We now need to define how our topics and streams relate to each other - how the data flows through our topology. Willa models a topology as a graph (a DAG) of entities. You express this as a vector of tuples. Each tuple has 2 elements, in the format `[:entity-id-from :entity-id-to]`, and represents a directed edge on the topology graph. Willa calls this a “workflow”. Our workflow looks like this:
 
 ```
 (def workflow
   [[:topic/purchase-made :stream/large-purchase-made]
    [:topic/humble-donation-made :stream/large-donation-made]
+   
+   ;; When there are multiple edges pointing to the same node, Willa will merge the inputs by default
    [:stream/large-purchase-made :topic/large-transaction-made]
    [:stream/large-donation-made :topic/large-transaction-made]])
 ```
@@ -206,18 +217,19 @@ You should see a diagram like this:
 ![Topology Diagram](/images/topology.png)
 
 
-To get it running, we just need a few lines of code to compile Willa’s representation of our topology into an actual Kafka Streams topology:
+Nice! To get it running, we just need a few lines of code to compile Willa’s representation of our topology into an actual Kafka Streams topology:
 
 ```
 ;; Create the humble-purchase-made topic
 (ja/create-topics! admin-client [humble-donation-made-topic])
 
 ;; Start the topology
-(js/start
-    (w/build-topology! (js/streams-builder) topology))
+(let [builder (js/streams-builder)]
+    (w/build-topology! builder topology)
+    (js/start (js/kafka-streams builder kafka-config)))
 	
-;; Produce a few more messages
-(make-humble-donation! 1000)
+;; Publish a couple of messages to the input topics
+(make-purchase! 200)
 (make-humble-donation! 15000)
 ```
 You should now see some more messages appear in the [large-transaction-made topic](http://localhost:3030/kafka-topics-ui/#/cluster/fast-data-dev/topic/n/large-transaction-made/).
@@ -226,23 +238,24 @@ So now we’ve completely specified our topology as data structures and transduc
 
 ```
 (def experiment-results
-  (we/run-experiment topology
-                     {:topic/purchase-made [{:key 1
-                                             :value {:id 1
-                                                     :amount 200
-                                                     :user-id 1234
-                                                     :quantity 100}}]
-                      :topic/humble-donation-made [{:key 2
-                                                    :value {:user-id 2345
-                                                            :donation-amount-cents 15000
-                                                            :donation-date "2019-01-02"}}]}))
+  (we/run-experiment 
+    topology
+    {:topic/purchase-made [{:key 1
+                            :value {:id 1
+                            :amount 200
+                            :user-id 1234
+                            :quantity 100}}]
+     :topic/humble-donation-made [{:key 2
+                                   :value {:user-id 2345
+                                   :donation-amount-cents 15000
+                                   :donation-date "2019-01-02"}}]}))
 
 
 ;; Visualise experiment result
 (wv/view-topology experiment-results)
 
 
-;; View results as data
+;; View results as data, a map of entity id to messages
 (->> experiment-results
      :entities
      (map (fn [[k v]]
@@ -274,4 +287,4 @@ The real advantage of Willa is that it relies on standard Clojure data structure
 ## Summary
 
 
-I hope that’s given you a brief overview of how to write a basic Kafka Streams topology. If you’re interested in learning more, I’d recommend starting here (TODO - link to good book). We’ve barely scratched the surface of Kafka Streams, there are many more concepts to learn (😓). We haven’t even touched on things like `KTable`s, aggregations, or joins. Willa is just an experiment at this point, but hopefully it’s given you some food for thought. I’d also recommend checking out the [Noah](https://github.com/blak3mill3r/noah) library, that has similar goals but a slightly different approach. Thanks for reading, please don’t hesitate to email me if you have any questions or comments.
+I hope that’s given you a brief overview of how to write a basic Kafka Streams topology. If you’re interested in learning more I’d recommend reading [Kafka 101](https://docs.confluent.io/current/streams/concepts.html#kafka-101) and [Designing Event Driven Systems](https://www.confluent.io/designing-event-driven-systems). I'd also recommend [this Kafka Streams Udemy course](https://www.udemy.com/share/1006h8BUIbeF9VQHw=/?xref=E0cacVdTQnkBSV82AT0GJVUWTx4dChQ%2BVFE=). We’ve barely scratched the surface of Kafka Streams, there are many more concepts to learn (😓). We haven’t even touched on things like `KTable`s, aggregations, or joins. Willa is just an experiment at this point, but hopefully it’s given you some food for thought. I’d also recommend checking out the [Noah](https://github.com/blak3mill3r/noah) library, that has similar goals but a slightly different approach. Thanks for reading, please don’t hesitate to email me if you have any questions or comments.
