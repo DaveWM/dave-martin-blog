@@ -237,30 +237,25 @@ You should now see some more messages appear in the [large-transaction-made topi
 So now we’ve completely specified our topology as data structures and transducers. What does that give us, other than being able to brag to other developers about how decomplected our code is? (Note - please don’t do that). One advantage is that, as we saw earlier, we’re able to test each transducer in isolation without knowing anything about Kafka Streams. We can also see how data flows through our topology, without interacting with Kafka at all. Willa calls this an "experiment". Run this in the repl:
 
 ```
-(def experiment-results
-  (we/run-experiment 
-    topology
-    {:topic/purchase-made [{:key 1
-                            :value {:id 1
-                            :amount 200
-                            :user-id 1234
-                            :quantity 100}}]
-     :topic/humble-donation-made [{:key 2
-                                   :value {:user-id 2345
-                                   :donation-amount-cents 15000
-                                   :donation-date "2019-01-02"}}]}))
+  ;; Run an experiment
+  (def experiment
+    (we/run-experiment
+      topology
+      {:topic/purchase-made [{:key 1
+                              :value {:id 1
+                                      :amount 200
+                                      :user-id 1234
+                                      :quantity 100}}]
+       :topic/humble-donation-made [{:key 2
+                                     :value {:user-id 2345
+                                             :donation-amount-cents 15000
+                                             :donation-date "2019-01-02"}}]}))
 
+  ;; Visualise experiment result
+  (wv/view-topology experiment)
 
-;; Visualise experiment result
-(wv/view-topology experiment-results)
-
-
-;; View results as data, a map of entity id to messages
-(->> experiment-results
-     :entities
-     (map (fn [[k v]]
-            [k (::we/output v)]))
-     (into {}))
+  ;; View results as data
+  (we/results-only experiment)
 ```
 
 The experiment results should look like this:
