@@ -159,7 +159,7 @@ Now for the topology itself, this is what the code looks like:
   (js/merge
     (-> (js/kstream builder purchase-made-topic)
         (transduce-stream purchase-made-transducer))
-    (-> (js/kstream builder humble-donation-made-transducer)
+    (-> (js/kstream builder humble-donation-made-topic)
         (transduce-stream humble-donation-made-transducer))))
 ```
 
