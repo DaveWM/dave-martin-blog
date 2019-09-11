@@ -2,6 +2,7 @@
 title: "Kafka Streams, the Clojure way"
 date: 2019-08-27T00:00:00+01:00
 draft: false
+description: A guide to using Kafka Streams in Clojure, using Jackdaw and Willa
 ---
 
 In this blog post, I'll walk you through how to create a Kafka Streams application in an idiomatic Clojure style. I won't assume any knowledge of Kafka or Kafka Streams, but if you've never heard of them before this post may be a bit overwhelming - I'd check out Confluent's [introduction to Kafka Streams](https://www.confluent.io/blog/introducing-kafka-streams-stream-processing-made-simple/), and also the [Kafka Streams docs](https://kafka.apache.org/documentation/streams/). 

@@ -2,6 +2,7 @@
 title: "Datomic for Cheapskates"
 date: 2018-04-21T10:00:00+01:00
 draft: false
+description: A walkthrough of how to set up a Datomic instance in the cheapest possible way
 ---
 
 First off, welcome to my brand new blog. I'm a Clojure programmer by day, so this blog will focus pretty much entirely on Clojure (as you probably guessed from the name). My main aim with this blog is to document step-by-step solutions for any difficult, or rare, problems I come across.

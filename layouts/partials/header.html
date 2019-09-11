@@ -24,6 +24,7 @@
   {{ else }}
   <meta property="og:type" content="website" />
   {{ end }}
+  <meta name="description" content="{{ if .Description }}{{ .Description }}{{ else }}{{ .Site.Params.description }}{{ end }}" />
 
   <title>
     {{ if ne .URL "/" }} {{ .Title }} &middot; {{ end }} {{ .Site.Title }}
