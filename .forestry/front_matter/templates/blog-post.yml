@@ -11,3 +11,5 @@ fields:
 - type: text
   name: description
   label: description
+pages:
+- content/posts/datomic-how-to-update-cardinality-many-attribute.md
