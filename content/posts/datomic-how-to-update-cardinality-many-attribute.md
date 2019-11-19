@@ -25,6 +25,6 @@ The solution is to pull the current values of the attribute, diff them with what
 
 // TODO - code to diff + create transactions
 
-That should be all we need! I've created a gist with with the helper functions from the code above here (TODO: link). You can also find some alternative solutions in \[this StackOverflow post\](https://stackoverflow.com/questions/39432061/updating-value-with-cardinality-many). 
+That should be all we need! I've created a gist with with the helper functions from the code above here (TODO: link). You can also find some alternative solutions in [this StackOverflow post](https://stackoverflow.com/questions/39432061/updating-value-with-cardinality-many "Related StackOverflow post").
 
 I hope this helps you out!
