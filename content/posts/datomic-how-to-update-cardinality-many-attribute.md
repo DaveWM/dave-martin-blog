@@ -2,7 +2,7 @@
 date = 2019-11-19T00:00:00Z
 description = "A walkthrough of how to update a cardinality many attribute in Datomic"
 draft = true
-title = "Datomic how to: Update Cardinality Many Attribute"
+title = "Datomic how-to: Update Cardinality Many Attribute"
 
 +++
 I've recently encountered a slight difficulty with updating cardinality many attributes in Datomic, and I thought I would make a short walkthrough post about it, to help out anyone else who runs into the same issue.
