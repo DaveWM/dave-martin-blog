@@ -39,7 +39,7 @@ One solution is to:
 3. Use that diff to create [transactions](https://docs.datomic.com/on-prem/transactions.html "Datomic transactions documentation")
 4. Apply the transactions using `d/transact`
 
-   Here's the code to do this:
+Here's the code to do this:
 
     (defn update-attr-txs [db entity-id attr values]
       (let [;; Step 1
