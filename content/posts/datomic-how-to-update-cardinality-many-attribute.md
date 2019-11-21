@@ -23,10 +23,12 @@ In Datomic, each attribute has a "cardinality", signifying how many values an at
 
 Creating a new todo with a list of tags is fairly straightforward:
 
-    (d/transact
-     conn
-     [{:todo/title "Do the dishes"
-       :todo/tags ["whenever"]}])
+```clojure
+(d/transact
+ conn
+ [{:todo/title "Do the dishes"
+   :todo/tags ["whenever"]}])
+```
 
 However, updating the tags for a todo is more difficult. It's easy to _add_ a value for the attribute, but not so easy to update them. Let's say we want to update the tags to be `["important" "today"]`, how would we do that?
 
@@ -41,26 +43,27 @@ One solution is to:
 
 Here's the code to do this:
 
-    (defn update-attr-txs [db entity-id attr values]
-      (let [;; Step 1
-            current-vals (-> (d/q '[:find [?p ...]
-                                    :where [?id :intention/parents ?p]
-                                    :in $ ?id]
-                                  db
-                                  entity-id)
-                             (set))
-            ;; Step 2
-            [added removed] (clojure.data/diff (set values) current-vals)
-            ]
-        ;; Step 3
-        (concat (->> added
-                     (map #(-> [:db/add entity-id attr %])))
-                (->> removed
-                     (map #(-> [:db/retract entity-id attr %]))))))
-     
-     ;; Step 4
-     (->> (update-attr-txs (d/db conn) 1 :todo/tags #{"important" "today"})
-         (d/transact conn))
+```clojure
+(defn update-attr-txs [db entity-id attr values]
+  (let [;; Step 1
+        current-vals (-> (d/q '[:find [?p ...]
+                                :where [?id :intention/parents ?p]
+                                :in $ ?id]
+                              db
+                              entity-id)
+                         (set))
+        ;; Step 2
+        [added removed] (clojure.data/diff (set values) current-vals)]
+    ;; Step 3
+    (concat (->> added
+                 (map #(-> [:db/add entity-id attr %])))
+            (->> removed
+                 (map #(-> [:db/retract entity-id attr %]))))))
+
+ ;; Step 4
+ (->> (update-attr-txs (d/db conn) 1 :todo/tags #{"important" "today"})
+      (d/transact conn))
+```
 
 That should be all you need! I've created a gist containing the `update-attr-txs` function [here](https://gist.github.com/DaveWM/66bced07550aaf295a3f40dbf263f171 "gist"). You can find some alternative solutions in [this StackOverflow post](https://stackoverflow.com/questions/39432061/updating-value-with-cardinality-many "Related StackOverflow post"), and also [this one](https://stackoverflow.com/questions/42112557/datomic-schema-for-a-to-many-relationship-with-a-reset-operation "another StackOverflow post").
 
