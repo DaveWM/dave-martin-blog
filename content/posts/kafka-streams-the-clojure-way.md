@@ -24,7 +24,7 @@ Let's imagine that you work at Fidget-no-more Incorporated, the world's largest 
 	
 Before we start, we need to start up a Kafka "broker", a server running Kafka. The easiest way to do this is to spin up a [landoop/fast-data-dev](https://github.com/Landoop/fast-data-dev) Docker container. You can do this by running the following command (you’ll need [Docker](https://www.docker.com) installed): 
 
-```
+```bash
 # On Linux
 docker run --rm --net=host landoop/fast-data-dev
 
@@ -42,7 +42,7 @@ By the way - all the commands we're going to run are in the comment block at the
 
 We now need to produce some dummy messages onto the `purchase-made` topic. These messages are going to look like this:
 
-```
+```clojure
 {:id 1
  :user-id 1234
  :amount 20
@@ -62,7 +62,7 @@ If you're interested in how `make-purchase!` works, check out the code in the wa
 
  You should see in the [fast-data-dev UI](http://localhost:3030/kafka-topics-ui/#/cluster/fast-data-dev/topic/n/purchase-made/) that messages appear in the topic. Now we have a topic with some dummy data in it, we can start writing our Kafka Streams topology. This is already defined in the walkthrough repo, here's the code:
 
-```
+```clojure
 (defn simple-topology [builder]
   (-> ;; Read the purchase-made topic into a KStream
       (js/kstream builder purchase-made-topic)
@@ -99,7 +99,7 @@ We’ve made a good start, but there are a few problems with our code at the mom
 
 To alleviate these problems, we’re going to use [transducers](https://clojure.org/reference/transducers). Transducers are "a powerful and composable way to build algorithmic transformations that you can reuse in many contexts”. Basically, they allow you to encapsulate the logic of transforming a stream of data, without specific knowledge of what the stream _is_. The stream could be a seq, a core.async channel, or a Kafka topic. If you’re not familiar with them already, you may want to check out [this introductory blog post](http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming). Let’s write a transducer that captures the logic of our topology:
 
-```
+```clojure
 (def purchase-made-transducer
   (comp
     ;; Note that each step takes a [key value] tuple
@@ -111,7 +111,7 @@ To alleviate these problems, we’re going to use [transducers](https://clojure.
 
 We can easily test the transducer in the repl like this:
 
-```
+```clojure
 (into []
       purchase-made-transducer
       [[1 {:purchase-id 1 :user-id 2 :amount 10 :quantity 1}]
@@ -120,7 +120,7 @@ We can easily test the transducer in the repl like this:
 
 We've successfully isolated the logic of our topology as a pure function. This enables us to easily test our topology's logic. Now we'll update our topology to use this transducer. We're going to use the `transduce-stream` function here - you don't need to know exactly how it works, only that it applies a transducer to a `KStream`.
 
-```
+```clojure
 (defn build-topology-with-transducer [builder]
   (-> (js/kstream builder purchase-made-topic)
       (transduce-stream purchase-made-transducer)
@@ -134,7 +134,7 @@ Great, this seems to have made our code more testable, flexible, and composable.
 
 
 Unfortunately, your boss now comes to you with another requirement (as they always do). Your company has just launched a new way of buying fidget spinners - The Humble Spinner Bundle™. Your customers pay whatever they think is fair for a bundle of 10 (ten!) fidget spinners. This is on a completely separate site, but luckily the team in charge of building it have created a Kafka topic for you, onto which they’ll publish all the purchases of the humble bundle - `humble-donation-made`. The sales team would like to send a congratulatory email to customers who pay a large amount for the bundle, in the same way as they do for regular purchases. Therefore, you’ve been tasked with consuming this topic in your application. Unfortunately, the team building the `humble-donation-made` topic have come up with a message schema that's slightly different to `purchase-made`. `humble-donation-made` messages look like this:
- ```
+ ```clojure
 {:user-id 1234
  :donation-amount-cents 1000 ;; £10
  :donation-date "2019-01-02"}
@@ -142,7 +142,7 @@ Unfortunately, your boss now comes to you with another requirement (as they alwa
 
 
 We’ll need to create a `KStream` from the `humble-donation-made` topic, apply a transducer to it, then use Jackdaw's `merge` function to merge it with the `KStream` from our previous topology. Let's start with the transducer for the `humble-donation-made` topic:
-```
+```clojure
 (def humble-donation-made-transducer
   (comp
     ;; Again, each step takes a [key value] tuple
@@ -155,7 +155,7 @@ We’ll need to create a `KStream` from the `humble-donation-made` topic, apply 
 
 Now for the topology itself, this is what the code looks like:
 
-```
+```clojure
 (defn more-complicated-topology [builder]
   (js/merge
     (-> (js/kstream builder purchase-made-topic)
@@ -172,7 +172,7 @@ This will work, but we’ve re-introduced all the problems we had before we star
 
 [Willa](https://github.com/DaveWM/willa) is just such a library. It allows you to express your topology as data and functions, rather than using the mutable `StreamsBuilder` API. Full disclosure - I’m the author of Willa, so if you’re looking for an unbiased critique of it, I’d just stop reading now. Let’s see how it would affect our code. We’ll start by defining all our topics and `KStream`s. In Willa, these are called "entities". We first need to construct a map of entity id to entity config, like so:
 
-```
+```clojure
 (def entities
   ;; We'll define our topic entities first
   ;; For the values, we just need to add the ::w/entity-type to our existing topic configs
@@ -190,7 +190,7 @@ This will work, but we’ve re-introduced all the problems we had before we star
 
 So far so good. We now need to define how our topics and streams relate to each other - how the data flows through our topology. Willa models a topology as a graph (a DAG) of entities. You express this as a vector of tuples. Each tuple has 2 elements, in the format `[:entity-id-from :entity-id-to]`, and represents a directed edge on the topology graph. Willa calls this a “workflow”. Our workflow looks like this:
 
-```
+```clojure
 (def workflow
   [[:topic/purchase-made :stream/large-purchase-made]
    [:topic/humble-donation-made :stream/large-donation-made]
@@ -201,14 +201,14 @@ So far so good. We now need to define how our topics and streams relate to each 
 ```
 
 Putting it together:
-```
+```clojure
 (def topology
   {:workflow workflow
    :entities entities})
 ```
 
 That's all we need to do to completely specify our topology. One nice advantage of doing it this way is that we can now visualise our topology. Run this command in the repl:
-```
+```clojure
 (wv/view-topology topology)
 ```
 
@@ -220,7 +220,7 @@ You should see a diagram like this:
 
 Nice! To get it running, we just need a few lines of code to compile Willa’s representation of our topology into an actual Kafka Streams topology:
 
-```
+```clojure
 ;; Create the humble-purchase-made topic
 (ja/create-topics! admin-client [humble-donation-made-topic])
 
@@ -237,7 +237,7 @@ You should now see some more messages appear in the [large-transaction-made topi
 
 So now we’ve completely specified our topology as data structures and transducers. What does that give us, other than being able to brag to other developers about how decomplected our code is? (Note - please don’t do that). One advantage is that, as we saw earlier, we’re able to test each transducer in isolation without knowing anything about Kafka Streams. We can also see how data flows through our topology, without interacting with Kafka at all. Willa calls this an "experiment". Run this in the repl:
 
-```
+```clojure
   ;; Run an experiment
   (def experiment
     (we/run-experiment
@@ -266,7 +266,7 @@ The experiment results should look like this:
 
 You can also verify that the topology is valid in the repl, using [clojure.spec](https://clojure.org/about/spec). You can do this by running:
 
-```
+```clojure
 ;; Should print "Success!!"
 (s/explain ::ws/topology topology)
 
