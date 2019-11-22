@@ -72,7 +72,7 @@ Before we can use our DB with Datomic, we need to set up a table that Datomic re
 * Once you've connected to the server, find your DB in the "Databases" list (protip: use ctrl+f), right click on it, and select "Query Tool"
 * Paste in this script (which is bundled with Datomic), and run it:
 
-```
+```sql
 CREATE TABLE datomic_kvs
 (
  id text NOT NULL,
@@ -119,7 +119,7 @@ object-cache-max=128m
 
 * Copy this to `Dockerfile`:
 
-```
+```dockerfile
 FROM pointslope/datomic-pro-starter:0.9.5561
 MAINTAINER [your name] "[your email]"
 CMD ["config/transactor.properties"]
@@ -154,14 +154,14 @@ There are 2 possible APIs you can use with Datomic: [client or peer](https://doc
 * If you're starting a new project, run `lein new [app name]`
 * Add the `my.datomic.com` repository to your `project.clj`:
 
-```
+```clojure
 :repositories {"my.datomic.com" {:url "https://my.datomic.com/repo"
                                  :creds :gpg}}
 ```
 
 * Add the following to `~/.lein/profiles.clj`:
 
-```
+```clojure
 {:user {...}
  :auth {:repository-auth {#"my\.datomic\.com" {:username [email]
                                                :password [datomic download key]}}}}
@@ -172,7 +172,7 @@ There are 2 possible APIs you can use with Datomic: [client or peer](https://doc
 * Add the JDBC Postgres drivers as a dependency, by adding `[org.postgresql/postgresql "9.3-1102-jdbc41"]` to `:dependencies` in `project.clj`.
 * Add the following code (or run it in the REPL):
 
-```
+```clojure
 (ns my-app.core
   (:require [datomic.api :as d]))
 
