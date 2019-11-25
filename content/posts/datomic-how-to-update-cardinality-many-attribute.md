@@ -5,11 +5,11 @@ draft = true
 title = "Datomic how-to: Update Cardinality Many Attribute"
 
 +++
-I've recently encountered a slight difficulty with updating [cardinality many](https://docs.datomic.com/on-prem/schema.html#cardinality "Datomic cardinality documentation") attributes in Datomic, and I thought I would make a short walkthrough post about it, to help out anyone else who runs into the same issue.
+I recently encountered a slight difficulty with updating [cardinality many](https://docs.datomic.com/on-prem/schema.html#cardinality "Datomic cardinality documentation") attributes in Datomic, so I thought I would make a short walkthrough post about it.
 
 ## The Problem
 
-In Datomic, each attribute has a "cardinality", signifying how many values an attribute is allowed. Most attributes have cardinality one, but they can also have cardinality many, meaning they can have multiple values. _Adding_ values for a cardinality many attribute is fairly straightforward, but updating them to a fixed set is more difficult. Let's take the example of a simple Todo list app, where each todo has a title and multiple tags. Our schema looks like this:
+In Datomic each attribute has a "cardinality", signifying how many values an attribute is allowed. Cardinality can be either "one" or "many". Adding values for a cardinality many attribute is fairly straightforward, but updating them to a specific set is more difficult. Let's take the example of a simple Todo list app, where each todo has a title and multiple tags. Our schema looks like this:
 
 ```clojure
 (def schema
@@ -21,7 +21,7 @@ In Datomic, each attribute has a "cardinality", signifying how many values an at
     :db/cardinality :db.cardinality/many}])
 ```
 
-Creating a new todo with a list of tags is fairly straightforward:
+Creating a new todo with a set of tags is fairly straightforward:
 
 ```clojure
 (d/transact
@@ -30,7 +30,11 @@ Creating a new todo with a list of tags is fairly straightforward:
    :todo/tags ["whenever"]}])
 ```
 
-However, updating the tags for a todo is more difficult. It's easy to _add_ a value for the attribute, but not so easy to update them. Let's say we want to update the tags to be `["important" "today"]`, how would we do that?
+As is adding a tag to an existing todo:
+
+    (d/transact conn [:db/add todo-entity-id :todo/tags "boring"])
+
+However, setting a todo's tags to a specific set of values is more difficult. There's no built-in way to do this in Datomic. Let's say we want to set the tags for a todo to `["important" "today"]`, how would we do that?
 
 ## The Solution
 
@@ -38,7 +42,9 @@ One solution is to:
 
 1. Query the current values of the attribute
 2. Diff them with the new values
-3. Use that diff to create [transactions](https://docs.datomic.com/on-prem/transactions.html "Datomic transactions documentation")
+3. Use that diff to create transactions to:
+   1. Add any new values
+   2. Retract values we no longer want
 4. Apply the transactions using `d/transact`
 
 Here's the code to do this:
@@ -55,13 +61,16 @@ Here's the code to do this:
         ;; Step 2
         [added removed] (clojure.data/diff (set values) current-vals)]
     ;; Step 3
-    (concat (->> added
-                 (map #(-> [:db/add entity-id attr %])))
-            (->> removed
-                 (map #(-> [:db/retract entity-id attr %]))))))
+    (concat 
+      ;; Step 3a
+      (->> added 
+           (map #(-> [:db/add entity-id attr %])))
+      ;; Step 3b
+      (->> removed
+           (map #(-> [:db/retract entity-id attr %]))))))
 
  ;; Step 4
- (->> (update-attr-txs (d/db conn) 1 :todo/tags #{"important" "today"})
+ (->> (update-attr-txs (d/db conn) todo-entity-id :todo/tags #{"important" "today"})
       (d/transact conn))
 ```
 
