@@ -1,7 +1,6 @@
 +++
 date = 2019-11-25T00:00:00Z
 description = "A walkthrough of how to update a cardinality many attribute in Datomic, using Clojure"
-draft = true
 title = "Datomic how-to: Update Cardinality Many Attribute"
 
 +++
