@@ -55,11 +55,16 @@
         {{ end }}
       </div>
       {{ with .Site.Params.contact }}
-      <div class="author-contact col-md-4">
-        <a href="{{ . }}">
-          <i class="fa fa-envelope-o" aria-hidden="true"></i>
-          &nbsp;Contact me
-        </a>
+      <div class="author-contact col-md-4 col-xs-5">
+        <div class="row text-center">
+          <a href="{{ . }}" class="contact-button">
+            <i class="fa fa-envelope-o" aria-hidden="true"></i>
+            &nbsp;Contact me
+          </a>
+        </div>
+        <div class="row text-center">
+          <a href="https://twitter.com/DWMartin41?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-size="large" data-show-screen-name="false" data-show-count="false">Follow @DWMartin41</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
       </div>
       {{ end }}
       <!-- Begin Mailchimp Signup Form -->
