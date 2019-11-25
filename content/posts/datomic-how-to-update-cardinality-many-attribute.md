@@ -9,7 +9,7 @@ I recently encountered a slight difficulty with updating [cardinality many](http
 
 ## The Problem
 
-In Datomic each attribute has a "cardinality", signifying how many values an attribute is allowed. Cardinality can be either "one" or "many". Adding values for a cardinality many attribute is fairly straightforward, but updating them to a specific set is more difficult. Let's take the example of a simple Todo list app, where each todo has a title and multiple tags. Our schema looks like this:
+In Datomic each attribute has a "cardinality", signifying how many values an attribute is allowed. Cardinality can be either "one" or "many". Adding values for a cardinality many attribute is fairly straightforward, but updating them to a specific set is more difficult. Let's take the example of a simple Todo list, where each todo has a title and multiple tags. Our schema looks like this:
 
 ```clojure
 (def schema
@@ -32,7 +32,9 @@ Creating a new todo with a set of tags is fairly straightforward:
 
 As is adding a tag to an existing todo:
 
-    (d/transact conn [:db/add todo-entity-id :todo/tags "boring"])
+```clojure
+(d/transact conn [:db/add todo-entity-id :todo/tags "boring"])
+```
 
 However, setting a todo's tags to a specific set of values is more difficult. There's no built-in way to do this in Datomic. Let's say we want to set the tags for a todo to `["important" "today"]`, how would we do that?
 
@@ -43,8 +45,8 @@ One solution is to:
 1. Query the current values of the attribute
 2. Diff them with the new values
 3. Use that diff to create transactions to:
-   1. Add any new values
-   2. Retract values we no longer want
+  1. Add any new values
+  2. Retract values we no longer want
 4. Apply the transactions using `d/transact`
 
 Here's the code to do this:
@@ -62,10 +64,10 @@ Here's the code to do this:
         [added removed] (clojure.data/diff (set values) current-vals)]
     ;; Step 3
     (concat 
-      ;; Step 3a
+      ;; Step 3.1
       (->> added 
            (map #(-> [:db/add entity-id attr %])))
-      ;; Step 3b
+      ;; Step 3.2
       (->> removed
            (map #(-> [:db/retract entity-id attr %]))))))
 
