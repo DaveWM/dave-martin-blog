@@ -7,7 +7,7 @@ title = "Saying \"Thank You\" to the NHS"
 +++
 ### (a.k.a how to generate a static site using Clojure)
 
-As many (all?) of you are no doubt aware, during these troubling times many young people are showing their support for the NHS and other key workers by [displaying paintings of rainbows in their windows](https://www.independent.co.uk/life-style/coronavirus-nhs-nightingale-hospital-rainbows-art-drawing-painting-a9452806.html). Since I'm an adult (legally, if not mentally), I thought I'd try to go one better - displaying a rainbow on a monitor. 
+As many (all?) of you are no doubt aware, during these troubling times many young people are showing their support for the NHS and other key workers by [displaying paintings of rainbows in their windows](https://www.independent.co.uk/life-style/coronavirus-nhs-nightingale-hospital-rainbows-art-drawing-painting-a9452806.html). Since I'm an adult (legally, if not mentally), I thought I'd try to go one better - displaying a rainbow on a monitor.
 
 Naturally, I turned to Clojure to do this. The basic plan was this:
 
@@ -42,7 +42,7 @@ Generating HTML in Clojure is dead easy, thanks to the excellent [Hiccup](https:
 
 This generates an SVG that looks like this:
 
-TODO: SVG here
+![](/rainbow.png)
 
 Great! Now we just have to create some hiccup for the entire page, which contains the rainbow SVG. Here's a slightly simplified version of the code ([full code here](https://bit.ly/3bzRt0j)):
 
@@ -83,6 +83,6 @@ Pretty easy! You can find my site at [https://relaxed-bartik-f774e5.netlify.app/
 
 To display the site, I dug out an old Raspberry Pi, and hooked it up to a monitor. I then pointed the Pi's browser at my site and made it full screen. Here's the result:
 
-TODO: photo
+![](/thank-you-nhs.jpg)
 
 Nice! I hope you enjoyed this post. If you'd like to do something to help the NHS in this time of crisis, you can donate to the "Clap for Carers" campaign [here](https://uk.virginmoneygiving.com/ClapForOurCarers).
