@@ -1,7 +1,6 @@
 +++
 date = 2020-04-29T23:00:00Z
 description = "A tutorial describing how to render HTML in Clojure, and set up a simple static site in Netlify."
-draft = true
 title = "Saying \"Thank You\" to the NHS, using Clojure"
 
 +++
