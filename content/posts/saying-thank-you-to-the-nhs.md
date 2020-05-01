@@ -115,6 +115,6 @@ To display the site, I dug out an old Raspberry Pi, and hooked it up to a monito
 
 ![](/thank-you-nhs.jpg)
 
-So that's how to set up a simple static site using Clojure! If you'd like to learn more, or build a more advanced static site, I'd recommend checking out the [Statis](https://github.com/magnars/stasis) library. Thanks for reading.
+So that's how to set up a simple static site using Clojure! If you'd like to learn more, or build a more advanced static site, I'd recommend checking out the [Statis](https://github.com/magnars/stasis) library. Yu can also check out another static site I made [here](https://github.com/DaveWM/intention-landing-page). Thanks for reading.
 
 P.S. If you'd like to do something to help the NHS in this time of crisis, you can donate to the "Clap for Carers" campaign [here](https://uk.virginmoneygiving.com/ClapForOurCarers).
