@@ -1,5 +1,5 @@
 +++
-date = 2020-04-30T23:00:00Z
+date = 2020-05-03T23:00:00Z
 description = "A tutorial describing how to render HTML in Clojure, and set up a simple static site in Netlify."
 title = "Saying \"Thank You\" to the NHS, using Clojure"
 
