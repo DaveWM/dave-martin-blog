@@ -20,26 +20,56 @@ Generating HTML in Clojure is dead easy, thanks to the excellent [Hiccup](https:
 
     (def rainbow
       (let [colours ["red" "orange" "yellow" "green" "blue" "indigo" "violet"]
-            rainbow-height 15
-            r-step (int (/ (- 50 rainbow-height) (inc (count colours))))]
-        [:div.rainbow
-         [:svg
-          {:viewBox "0 0 100 50"
-           :preserveAspectRatio "xMidYMax slice"
-           :width "auto"}
-          [:defs
-           [:mask {:id "hole"}
-            [:rect {:width "100%" :height "100%" :fill "white"}]
-            [:circle {:cx 50 :cy 50 :r (* 1.5 rainbow-height) :fill "black"}]]]
-          (->> (concat
-                [:g {:mask "url(#hole)"}]
-                (->> colours
-                     (map-indexed
-                      (fn [idx colour]
-                        [:circle {:cx 50 :cy 50 :r (- 50 (* r-step idx)) :fill colour}]))))
-               (into []))]]))
+            ;; (Richard of York gave battle in vain)
+            viewbox-width 100
+            ;; the rainbow is a semicircle, so we need our SVG to be in a 2:1 ratio
+            viewbox-height (/ viewbox-width 2)
+            ;; this is the height of the arch - try setting it to different values
+            arch-height 25
+            ;; the width of a single colour band
+            ;; equal to the difference between viewbox height and the arch height, divided by the number of colours
+            band-width (/ (- viewbox-height arch-height) (count colours))]
+        [:svg
+         {:viewBox (str "0 0 " viewbox-width " " viewbox-height)
+          :preserveAspectRatio "xMidYMax slice"
+          :width "auto"}
+         [:defs
+          ;; This mask cuts out a hole in the rainbow, for the bit underneath the arch
+          [:mask {:id "arch"}
+           [:rect {:width "100%" :height "100%" :fill "white"}]
+           ;; note - SVG coordinates are upside down (y = 0 is at the top), so "viewbox-height" is at the bottom
+           [:circle {:cx viewbox-height :cy viewbox-height :r arch-height :fill "black"}]]]
+         [:g {:mask "url(#arch)"}
+          (->> colours
+               (map-indexed
+                (fn [idx colour]
+                  [:circle {:cx (/ viewbox-width 2)             ;; this is the horizontal centre
+                            :cy viewbox-height
+                            ;; start with the largest band (red), and make each successive colour circle smaller by "band-width"
+                            :r (- viewbox-height (* band-width idx))
+                            :fill colour}])))]]))
 
-This generates an SVG that looks like this:
+This generates hiccup which compiles to the following HTML:
+
+    <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 100 50" width="auto">
+        <defs>
+            <mask id="arch">
+                <rect fill="white" height="100%" width="100%"></rect>
+                <circle cx="50" cy="50" fill="black" r="25"></circle>
+            </mask>
+        </defs>
+        <g mask="url(#arch)">
+            <circle cx="50" cy="50" fill="red" r="50"></circle>
+            <circle cx="50" cy="50" fill="orange" r="46.42857"></circle>
+            <circle cx="50" cy="50" fill="yellow" r="42.857143"></circle>
+            <circle cx="50" cy="50" fill="green" r="39.285713"></circle>
+            <circle cx="50" cy="50" fill="blue" r="35.714287"></circle>
+            <circle cx="50" cy="50" fill="indigo" r="32.142857"></circle>
+            <circle cx="50" cy="50" fill="violet" r="28.571428"></circle>
+        </g>
+    </svg>
+
+Which looks like this:
 
 ![](/rainbow.png)
 
@@ -50,12 +80,11 @@ Great! Now we just have to create some hiccup for the entire page, which contain
        [:body
         [:div.main
          [:h1 "Thank you NHS!"]
-         rainbow]]])
+         [:div.rainbow rainbow]]]])
 
 Now we just have to render the HTML, and spit it out to a file:
 
     (defn main [& args]
-      (println "Building...")
       (->> (h/html page) ;; convert our Hiccup to a string
            (spit "public/index.html") ;; spit the string out to an HTML file
      )
@@ -86,4 +115,6 @@ To display the site, I dug out an old Raspberry Pi, and hooked it up to a monito
 
 ![](/thank-you-nhs.jpg)
 
-Nice! I hope you enjoyed this post. If you'd like to do something to help the NHS in this time of crisis, you can donate to the "Clap for Carers" campaign [here](https://uk.virginmoneygiving.com/ClapForOurCarers).
+So that's how to set up a simple static site using Clojure! If you'd like to learn more, or build a more advanced static site, I'd recommend checking out the [Statis](https://github.com/magnars/stasis) library. 
+
+P.S. If you'd like to do something to help the NHS in this time of crisis, you can donate to the "Clap for Carers" campaign [here](https://uk.virginmoneygiving.com/ClapForOurCarers).
