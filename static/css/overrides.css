@@ -1,3 +1,99 @@
+@font-face {
+    font-family: 'Uni Neue';
+    src: url('/fonts/UniNeueRegular.eot');
+    src: local('Uni Neue Regular'), local('UniNeueRegular'),
+        url('/fonts/UniNeueRegular.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/UniNeueRegular.woff2') format('woff2'),
+        url('/fonts/UniNeueRegular.woff') format('woff'),
+        url('/fonts/UniNeueRegular.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Uni Neue';
+    src: url('/fonts/UniNeueLight.eot');
+    src: local('Uni Neue Light'), local('UniNeueLight'),
+        url('/fonts/UniNeueLight.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/UniNeueLight.woff2') format('woff2'),
+        url('/fonts/UniNeueLight.woff') format('woff'),
+        url('/fonts/UniNeueLight.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Uni Neue';
+    src: url('/fonts/UniNeueBold.eot');
+    src: local('Uni Neue Bold'), local('UniNeueBold'),
+        url('/fonts/UniNeueBold.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/UniNeueBold.woff2') format('woff2'),
+        url('/fonts/UniNeueBold.woff') format('woff'),
+        url('/fonts/UniNeueBold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+body, p, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Uni Neue', "Source Sans Pro", "Kozuka Gothic Pr6N", Meiryo, sans-serif !important;
+}
+
 .contact-button {
     margin-bottom: 8px;
+}
+
+.author-avatar img {
+    object-fit: cover;
+    object-position: top;
+}
+
+.logo {
+    max-width: 450px;
+    width: 75%;
+}
+
+.header-text {
+    background-color: transparent;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.tag-line {
+    font-size: 20px;
+}
+
+.btn {
+    padding: 7px 16px;
+    border: 1px solid rgba(255, 255, 255, 1.0);
+    border-radius: 3px;
+    background-color: rgb(27,59,111);
+    color: rgba(255, 255, 255, 1.0);
+    text-decoration: none;
+    font-weight: 300;
+    font-size: 13px;
+    transition: color,background-color 0.1s linear;
+}
+
+.btn-large {
+    font-size: 19px;
+}
+
+.btn:hover {
+    background-color: rgba(255, 255, 255, 1.0);
+    color: rgba(0, 0, 0, 1.0);  
+}
+
+.header-text {
+    text-align: center;
+    padding-bottom: 15px;
+}
+
+.author-bio {
+    padding-top: 5px;
+    margin-bottom: 9px;
 }

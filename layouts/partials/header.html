@@ -41,33 +41,34 @@
   {{ if eq .URL "/" }}
   <link href="{{ .RSSLink }}" rel="alternate" type="application/rss+xml" title="{{ .Site.Title }}" />
   {{ end }}
-  <!-- Fathom - simple website analytics - https://github.com/usefathom/fathom -->
-  <script>
-    (function(f, a, t, h, o, m){
-      a[h]=a[h]||function(){
-	(a[h].q=a[h].q||[]).push(arguments)
-      };
-      o=f.createElement('script'),
-      m=f.getElementsByTagName('script')[0];
-      o.async=1; o.src=t; o.id='fathom-script';
-      m.parentNode.insertBefore(o,m)
-    })(document, window, '//stats.lobster-writer.co.uk/tracker.js', 'fathom');
-    fathom('set', 'siteId', 'JHTIL');
-    fathom('trackPageview');
+<!-- Fathom - simple website analytics - https://github.com/usefathom/fathom -->
+<script>
+  (function(f, a, t, h, o, m){
+    a[h]=a[h]||function(){
+      (a[h].q=a[h].q||[]).push(arguments)
+    };
+    o=f.createElement('script'),
+    m=f.getElementsByTagName('script')[0];
+    o.async=1; o.src=t; o.id='fathom-script';
+    m.parentNode.insertBefore(o,m)
+  })(document, window, '//stats.lobster-writer.co.uk/tracker.js', 'fathom');
+  fathom('set', 'siteId', 'AXLVB');
+  fathom('trackPageview');
   </script>
   <!-- / Fathom -->
   <link rel="stylesheet" href="/css/hljs.css">
 </head>
 <body>
-    <header class="global-header"  style="background-color: black">
+<header class="global-header"  style="background-color: {{.Site.Params.themecolor }}">
     <section class="header-text">
-      <h1><a href="{{ .Site.BaseURL }}">{{ .Site.Title }}</a></h1>
+      <h1><a href="{{ .Site.BaseURL }}"><img class="logo" src="/images/logo-stacked-small.png" /></a></h1>
       {{ with .Site.Params.subtitle }}
       <div class="tag-line">
         {{ . }}
       </div>
       {{ end }}
       {{ partial "link.html" . }}
+      <a class="btn btn-large" href="{{.Site.Params.portfolio}}">Hire Me</a>
       {{ if ne .URL "/" }}
       <a href="{{ .Site.BaseURL }}" class="btn-header btn-back hidden-xs">
         <i class="fa fa-angle-left" aria-hidden="true"></i>
