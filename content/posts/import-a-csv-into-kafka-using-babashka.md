@@ -47,9 +47,9 @@ Let's start by parsing the CSV into a seq of maps:
 ;; For each line in the body, create a map with the headers as the keys
 (def values
     (->> body
-        (map (partial zipmap headers))
-        ;; if you need to do any additional processing on each line, do it here
-        ))
+         (map (partial zipmap headers))
+         ;; if you need to do any additional processing on each line, do it here
+         ))
 ```
 
 Now we need to create a seq of formatted key-value pairs. To do this, we need to know which column we should use for the key, so we'll pass this in as the second command line argument.
