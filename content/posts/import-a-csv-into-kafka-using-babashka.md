@@ -60,7 +60,7 @@ We now have a seq of correctly formatted output key-value pairs as `output-lines
     (doseq [output output-lines]
         (println output)))
 
-Great, that's all we need for the Babashka script! You can find the script here (TODO - link), if you'd like to download and run it. Now we just need a quick bash one-liner...
+Great, that's all we need for the Babashka script! You can find the script [here](https://gist.github.com/DaveWM/3185481497d32ca623838137e77bd291 "Babashka script gist"), if you'd like to download and run it. Now we just need a quick bash one-liner...
 
 ### The bash one-liner
 
