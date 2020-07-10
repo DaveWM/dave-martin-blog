@@ -7,7 +7,7 @@ title = "Import a CSV into Kafka, using Babashka"
 +++
 In life, you don't always get what you want. As developers, we may want all our data in a nice format like [EDN](https://github.com/edn-format/edn "EDN format") or [Transit](https://github.com/cognitect/transit-format "Transit format"), but alas this isn't always possible. Sometimes marketing send you data in a `.docx` file (containing a scan of a photocopy of a screenshot of an HTML table), or perhaps you receive a 5 megabyte Excel spreadsheet from a 3rd party. It's an unfortunate fact of developer life that you have to spend a lot of time massaging data into a usable format.
 
-True to this, I recently ran into a situation where I had to load a large CSV file into a Kafka topic. Kafka's CLI tools don't have a built-in way of doing this. You could write a bash script that uses the [Kafka console producer](https://riptutorial.com/apache-kafka/example/27965/kafka-console-producer "Kafka console producer docs"), but using bash for data manipulation is always painful (what's the syntax for a `for` loop again?). You could use Python instead, but that's so 90s. If only there were a way to use a powerful, modern, functional language for shell scripting...
+True to this, I was recently tasked with loading a large CSV file into a Kafka topic. Kafka's CLI tools don't have a built-in way of doing this. You could write a bash script that uses the [Kafka console producer](https://riptutorial.com/apache-kafka/example/27965/kafka-console-producer "Kafka console producer docs"), but using bash for data manipulation is always painful ("what's the syntax for a `for` loop again?"). You could use Python instead, but that's so 90s. If only there were a way to use a powerful, modern, functional language for shell scripting...
 
 This is where [Babashka](https://github.com/borkdude/babashka "Babashka") comes in. Babashka is a derivative of Clojure, designed for shell scripting - it covers the "grey areas of Bash". Clojure is a fantastic language for dealing with data, so Babashka seems like an ideal candidate for our task. In this guide we'll go step-by-step through writing a Babashka script to convert our CSV file to a format we can load into Kafka, which we'll then pipe into the Kafka console producer.
 
@@ -69,7 +69,21 @@ We now have a seq of correctly formatted output key-value pairs as `output-lines
     (println output)))
 ```
 
-Great, that's all we need for the Babashka script! You can find the script [here](https://gist.github.com/DaveWM/3185481497d32ca623838137e77bd291 "Babashka script gist"), if you'd like to download and run it. Now we just need a quick bash one-liner...
+Great, that's all we need for the Babashka script! You can find the script [here](https://gist.github.com/DaveWM/3185481497d32ca623838137e77bd291 "Babashka script gist"), if you'd like to download and run it.
+
+### Setting up Kafka
+
+_If you already have Kafka up and running, you can skip this part._ 
+
+The easiest way to get started with Kafka is to use the [spotify/kafka](https://hub.docker.com/r/spotify/kafka/ "docker image repository") Docker image, you'll just need [Docker](https://docs.docker.com/get-docker/ "Docker install") installed. To spin it up, run:
+
+     docker run --rm -p 2181:2181 -p 9092:9092 --env ADVERTISED_HOST=localhost -d spotify/kafka
+
+Now Kafka is up and running, we need to create a topic to load our CSV data into. Run this command, changing the topic name if you like:
+
+    docker run --rm --net=host confluentinc/cp-kafka kafka-topics --create --topic csv-data --replication-factor 1 --partitions 15 --bootstrap-server localhost:9092
+
+Great, you've got a Kafka topic up and running! Now we just need a quick bash script to produce some messages to it...
 
 ### The bash one-liner
 
