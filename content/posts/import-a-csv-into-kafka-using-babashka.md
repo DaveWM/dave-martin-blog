@@ -58,7 +58,7 @@ Now we need to create a seq of formatted key-value pairs. To do this, we need to
 (def key-field (second *command-line-args*))
      
 (def output-lines
-    (->> data
+    (->> values
          (map #(str (get % key-field) "::" (json/generate-string %)))))
 ```
 
@@ -66,41 +66,43 @@ We now have a seq of correctly formatted output key-value pairs as `output-lines
 
 ```clojure
 (doseq [output output-lines]
-    (println output)))
+    (println output))
 ```
 
 Great, that's all we need for the Babashka script! You can find the script [here](https://gist.github.com/DaveWM/3185481497d32ca623838137e77bd291 "Babashka script gist"), if you'd like to download and run it.
 
 ### Setting up Kafka
 
-_If you already have Kafka up and running, you can skip this part._ 
+_If you already have Kafka up and running, you can skip this part._
 
 The easiest way to get started with Kafka is to use the [spotify/kafka](https://hub.docker.com/r/spotify/kafka/ "docker image repository") Docker image, you'll just need [Docker](https://docs.docker.com/get-docker/ "Docker install") installed. To spin it up, run:
 
      docker run --rm -p 2181:2181 -p 9092:9092 --env ADVERTISED_HOST=localhost -d spotify/kafka
 
-Now Kafka is up and running, we need to create a topic to load our CSV data into. Run this command, changing the topic name if you like:
+Once it's up and running, we need to create a topic to load our CSV data into. Run this command, which will create a topic called `csv-data`:
 
     docker run --rm --net=host confluentinc/cp-kafka kafka-topics --create --topic csv-data --replication-factor 1 --partitions 15 --bootstrap-server localhost:9092
 
 Great, you've got a Kafka topic up and running! Now we just need a quick bash script to produce some messages to it...
 
-### The bash one-liner
+### Producing to the Kafka topic
 
-We'll run our Babashka script with the correct arguments (the path to the CSV file, and the name of the key field), then pipe its output into the Kafka console producer. You'll need [Babashka](https://github.com/borkdude/babashka#installation "Babashka install") and [Docker](https://docs.docker.com/get-docker/ "Docker install") installed for this. Here's the one-liner (you'll need to update the bits in square brackets according to your Kafka setup):
-
-```bash
-bb csv-to-kafka.clj [path to csv] [key field name] | docker run --net=host --rm -i confluentinc/cp-kafka kafka-console-producer --broker-list [Kafka broker url, usually ends with :9092] --topic [topic name] --property "parse.key=true" --property "key.separator=::"
-```
-
-That's it! You can now view the messages in your Kafka topic by running:
+We'll now run our Babashka script on a [dummy CSV](/dummy-data.csv "dummy CSV"), then pipe its output into the Kafka console producer. You'll need [Babashka](https://github.com/borkdude/babashka#installation "Babashka install") and [Docker](https://docs.docker.com/get-docker/ "Docker install") installed for this. Here's the one-liner:
 
 ```bash
-sudo docker run --rm -t edenhill/kafkacat:20190711 -b [kafka broker url] -t [topic name] -e -f "%k :: %s\n"
+bb csv-to-kafka.clj dummy-data.csv id | docker run --net=host --rm -i confluentinc/cp-kafka kafka-console-producer --broker-list localhost:9092 --topic csv-data --property "parse.key=true" --property "key.separator=::"
 ```
+
+You can edit the script if you like, perhaps to read from a different CSV or to produce to a different topic. You can now view the messages in your Kafka topic by running:
+
+```bash
+docker run --rm --net=host -t edenhill/kafkacat:20190711 -b localhost:9092 -t csv-data -e -f "%k :: %s\n" -q
+```
+
+You should see some messages output to the console - job done!
 
 _(Note that when you want to consume this data in an application, you should use the_ [_String Serde_](https://kafka.apache.org/11/javadoc/org/apache/kafka/common/serialization/Serdes.StringSerde.html "String Serde docs") _as the key serde and a_ [_JSON Serde_](https://sachabarbs.wordpress.com/2019/03/14/kafkastreams-custom-serdes/ "JSON Serde blog") _as the value serde)_
 
 ### Summary
 
-We went through how to write a short Babashka script to parse a CSV into a key-value pair format, and we then wrote a quick one-liner to run this script and pipe the output to the Kafka console producer. This is a fairly trivial example, but I hope it shows you how Babashka can make shell scripting a bit easier. If you're a masochist, you can try doing the same thing in bash, and see how much harder it is! Thanks for reading.
+We went through how to write a short Babashka script to parse a CSV into a key-value pair format, and we then wrote a quick one-liner to run this script and pipe the output to the Kafka console producer. This is a fairly trivial example, but I hope it shows you how Babashka can make shell scripting a bit easier. If you're a masochist, you can try doing the same thing in pure bash, and see how much harder it is! Thanks for reading.
