@@ -1,5 +1,5 @@
 +++
-date = 2020-07-08T08:15:00Z
+date = 2020-07-13T08:15:00Z
 description = "A walkthrough of how to import data from a CSV file into a Kafka topic, using a Babashka script"
 draft = true
 title = "Import a CSV into Kafka, using Babashka"
