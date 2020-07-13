@@ -1,7 +1,7 @@
 +++
 date = 2020-07-13T08:15:00Z
 description = "A walkthrough of how to import data from a CSV file into a Kafka topic, using a Babashka script"
-draft = true
+draft = false
 title = "Import a CSV into Kafka, using Babashka"
 
 +++
@@ -52,7 +52,7 @@ Let's start by parsing the CSV into a seq of maps:
          ))
 ```
 
-Now we need to create a seq of formatted key-value pairs. To do this, we need to know which column we should use for the key, so we'll pass this in as the second command line argument.
+Now we need to create a seq of formatted key-value pairs. To do this, we need to know which column we should use for the message key, so we'll pass this in as the second command line argument.
 
 ```clojure
 (def key-field (second *command-line-args*))
@@ -105,4 +105,4 @@ _(Note that when you want to consume this data in an application, you should use
 
 ### Summary
 
-We went through how to write a short Babashka script to parse a CSV into a key-value pair format, and we then wrote a quick one-liner to run this script and pipe the output to the Kafka console producer. This is a fairly trivial example, but I hope it shows you how Babashka can make shell scripting a bit easier. If you're a masochist, you can try doing the same thing in pure bash, and see how much harder it is! Thanks for reading.
+We went through how to write a short Babashka script to parse a CSV into a key-value pair format, and we then wrote a quick one-liner to run this script and pipe the output to the Kafka console producer. This is a fairly trivial example, but I hope it shows you how Babashka can make shell scripting a bit easier. If you're a glutton for punishment, you can try doing the same thing in pure bash, and see how much harder it is! Thanks for reading.
