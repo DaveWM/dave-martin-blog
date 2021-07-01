@@ -13,5 +13,6 @@ fields:
   label: description
 pages:
 - content/posts/datomic-how-to-update-cardinality-many-attribute.md
+- content/posts/debugging-in-clojure.md
 - content/posts/import-a-csv-into-kafka-using-babashka.md
 - content/posts/saying-thank-you-to-the-nhs.md
