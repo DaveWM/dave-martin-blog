@@ -14,10 +14,18 @@ For cases when you need to debug a piece of code more thoroughly, the scope-capt
 One debugging trick I've found very useful is to set up a command in your editor for def'ing let bindings. This helps both when debugging pure functions, and using the scope-capture approach detailed above. Let's say you have a function like this: 
 
 ```clojure
-(defn get-owner-and-pets [owner-id] (let [owner (db/get-owner owner-id) pet-ids (:pet-ids owners) pets (->> pet-ids (map db/get-pet))\] (assoc owner :pets pets))) 
+(defn get-owner-and-pets [owner-id] 
+  (let [owner (db/get-owner owner-id) 
+        pet-ids (:pet-ids owners) 
+        pets (->> pet-ids (map db/get-pet))]
+    (assoc owner :pets pets))) 
 ```
 
-Imagine it's not working as expected. One approach to debugging it would be to def the owner-id in your REPL and then evaluate each of the let bindings in turn. You would run "(def owner-id 1234)", then evaluate the let bindings one-by-one into your REPL, like "(def owner (db/get-owner owner-id))". This can be a bit laborious when you have a big let binding, and I've found setting up a command in your editor is well worth the effort. If you're using IntelliJ and Cursive, you can add the following as a custom REPL command (TODO: link): \`\`\` (do (->> '\[\~selection\] (partition 2) (map (fn \[\[sym val\]\] (intern _ns_ sym (eval val)))) (doall))) \`\`\` Now just select the code inside the square brackets in the let statement, and then run your custom command. All the let bindings should be evaluated and def'd in your REPL.
+Imagine it's not working as expected. One approach to debugging it would be to def the owner-id in your REPL and then evaluate each of the let bindings in turn. You would run "(def owner-id 1234)", then evaluate the let bindings one-by-one into your REPL, like "(def owner (db/get-owner owner-id))". This can be a bit laborious when you have a big let binding, and I've found setting up a command in your editor is well worth the effort. If you're using IntelliJ and Cursive, you can add the following as a custom REPL command (TODO: link): 
+```clojure
+(def ~selection) 
+```
+Now just select the code inside the square brackets in the let statement, and then run your custom command. All the let bindings should be evaluated and def'd in your REPL.
 
 There are other some tools that I've played around with, but personally found I don't use heavily. REBL, Reveal, and Portal are graphical tools for viewing Clojure data structures. They're a great idea, but to be honest I tried out REBL and found I didn't use it much in practice. In the course of researching for this blog post I came across Debux, a library which provides some nice debugging utilities. I haven't had a chance to properly evaluate it yet, but it looks like a very helpful library. If you're using Cursive, you can also use Intellij's built-in debugger. This may be useful in some circumstances, but in general I've found that using scope-capture is easier and more effective. The debugger pauses the thread which is executing the code, which can often cause havok with other threads (in a Kafka Streams topology for example).
 
