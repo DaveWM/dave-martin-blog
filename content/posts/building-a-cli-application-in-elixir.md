@@ -5,7 +5,7 @@ draft = true
 title = "Building a CLI Application in Elixir"
 
 +++
-In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, call a couple of HTTP endpoints in Intention's backend API, and then format the results nicely. 
+In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, call a couple of HTTP endpoints in Intention's backend API, and then format the results nicely. This will be a fairly high level overview, if you'd prefer a more detailed step by step guide I've linked to a couple at the bottom of the page.
 
 I use [Clojure](https://clojure.org/) for my day-to-day work, but I wanted to try out a different language. Also, Clojure's slow startup time makes it slightly suboptimal for CLI applications. I initially decided on [Haskell](https://www.haskell.org/). I'd previously only written a few small scripts in Haskell, and was eager to see how I fared writing a full application. Unfortunately, to my despair I quickly found myself bogged down in type errors. I quickly abandoned Haskell after realising that either it's too hard to use for small applications, or that I lack the necessary brainpower to use it properly.
 
@@ -143,3 +143,9 @@ The result looks like this:
 Now we come to the final piece of the puzzle - how do you bundle your code into a distributable application? Handily, Elixir comes bundled with the [escript](https://elixirschool.com/en/lessons/intermediate/escripts#building-2) utility for this. You simply put your code in a `main` function, add an `escript` field to your project's `mix.exs`, and then run `mix escript.build`. This will create an executable file. The only caveat I found is that the resulting executable depends on the Erlang VM. I tried out [bakeware](https://github.com/bake-bake-bake/bakeware) and [burrito](https://github.com/burrito-elixir/burrito) to get around this, but neither of them seem to play nicely with my OS (NixOS) and unfortunately I couldn't get them working.
 
 I really liked working with Elixir. I found it easy to get started, IEx is great, and the overall language is well designed and intuitive. If you're using Emacs, [Alchemist](https://alchemist.readthedocs.io/en/latest/) gives you some fantastic tooling, including an integrated REPL. I'd definitely use Elixir again for writing a CLI app. I'd also like to try out [Phoenix](https://www.phoenixframework.org/), a Ruby On Rails style web framework for Elixir. [LiveView](https://github.com/phoenixframework/phoenix_live_view) in particular looks very interesting. If you're looking to try out a new language, I'd highly recommend Elixir. If you want to check out the source code for the Intention CLI, you can find it here. Thanks for reading!
+
+**Further Reading**
+
+[https://hackernoon.com/elixir-console-application-with-json-parsing-lets-print-to-console-b701abf1cb14](https://hackernoon.com/elixir-console-application-with-json-parsing-lets-print-to-console-b701abf1cb14 "https://hackernoon.com/elixir-console-application-with-json-parsing-lets-print-to-console-b701abf1cb14")
+
+[https://medium.com/blackode/writing-the-command-line-application-in-elixir-78a8d1b1850](https://medium.com/blackode/writing-the-command-line-application-in-elixir-78a8d1b1850 "https://medium.com/blackode/writing-the-command-line-application-in-elixir-78a8d1b1850")
