@@ -22,51 +22,53 @@ You can then start a REPL by running `iex -S mix`, and run some commands:
 Now I had a project set up, I needed a way of parsing command line arguments. I wanted to handle commands like `intention login` and `intention list --all`. I used the excellent Optimus library for this. Optimus made it dead easy to set up multiple subcommands, each with their own allowed arguments. You can also set a help message for each subcommand and argument, which makes it easy to create a great user experience. To get started, it's as simple as calling `optimus = Optimus.new!(...)`, then `Optimus.parse(optimus, args)`. Here's my (slightly shortened) argument parsing code:
 
 ```elixir
-    optimus = Optimus.new!(
-          name: "intention",
-          description: "CLI for Intention",
-          version: "0.1.0",
-          allow_unknown_args: false,
-          parse_double_dash: true,
-          subcommands: [
-            login: [
-              name: "login",
-              about: "Log in to Intention. Required to run other commands."
-            ],
-            list: [
-              name: "list",
-              about: "List your intentions in a tree format.",
-              flags: [
-                all: [
-                  short: "-a",
-                  long: "--all",
-                  help: "Show all intentions, including completed."
-                ]
-              ],
-              args: [
-                view: [
-                  value_name: "view",
-                  help: "View to display",
-                  parser: fn(s) ->
-                    case Integer.parse(s) do
-                      {:error, _} -> {:error, "invalid view id - should be an integer"}
-                      {i, _} -> {:ok, i}
-                    end
-                  end,
-                  required: false
-                ]
-              ]
-            ]
+optimus =
+  Optimus.new!(
+    name: "intention",
+    description: "CLI for Intention",
+    version: "0.1.0",
+    allow_unknown_args: false,
+    parse_double_dash: true,
+    subcommands: [
+      login: [
+        name: "login",
+        about: "Log in to Intention. Required to run other commands."
+      ],
+      list: [
+        name: "list",
+        about: "List your intentions in a tree format.",
+        flags: [
+          all: [
+            short: "-a",
+            long: "--all",
+            help: "Show all intentions, including completed."
           ]
-        )
-    
-        args = Optimus.parse!(optimus, argv)
-    
-        case args do
-          %{args: %{}} -> Optimus.parse!(optimus, ["--help"]) # display help when not given any args
-          {[:login], args} -> handle_auth()
-          {[:list], args} -> list_intentions(args)
-        end
+        ],
+        args: [
+          view: [
+            value_name: "view",
+            help: "View to display",
+            parser: fn s ->
+              case Integer.parse(s) do
+                {:error, _} -> {:error, "invalid view id - should be an integer"}
+                {i, _} -> {:ok, i}
+              end
+            end,
+            required: false
+          ]
+        ]
+      ]
+    ]
+  )
+
+args = Optimus.parse!(optimus, argv)
+
+case args do
+  # display help when not given any args
+  %{args: %{}} -> Optimus.parse!(optimus, ["--help"])
+  {[:login], args} -> handle_auth()
+  {[:list], args} -> list_intentions(args)
+end
 ```
 
 And here's what you get when you run `intention --help`:
@@ -76,64 +78,65 @@ And here's what you get when you run `intention --help`:
 My next task was to figure out how to make HTTP requests to Intention's JSON API. Luckily, this is very simple in Elixir. I used the [HTTPotion](https://github.com/unrelentingtech/httpotion) library for making the actual requests, plus the [Jason](https://github.com/michalmuskala/jason) library to parse the response JSON. Making a request can then be done like so:
 
 ```elixir
-    HTTPotion.get(url) 
-    |> Map.get(:body) 
-    |> Jason.decode
+HTTPotion.get(url)
+|> Map.get(:body)
+|> Jason.decode()
 ```
 
 This works, but unfortunately doesn't account for errors. The HTTP request may fail due to a bad WiFi connection, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, and it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`? I decided to use error tuples as much as possible. This allows you to write more functional code, which is more easily tested. To help me with this, I used the [OK](https://github.com/CrowdHailer/OK) library. I found taking this approach simplified my error handling code. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`. Here's a `handle_response` function I wrote for handling (possibly failed) HTTP responses:
 
 ```elixir
-    def handle_response(res) do
-        case res do
-          %{status_code: 401} ->
-            {:error, :unauthorized}
-    
-          %{status_code: 200} = r ->
-            parse_json_body(r)
-    
-          res ->
-            OK.for do
-              body <- res |> parse_json_body()
-    
-              reason <-
-                case Map.fetch(body, :reason) do
-                  {:ok, _} = ok ->
-                    ok
-    
-                  :error ->
-                    IO.inspect(res)
-                    {:error, :unknown_error}
-                end
-            after
-              {:error, reason}
-            end
-        end
+def handle_response(res) do
+  case res do
+    %{status_code: 401} ->
+      {:error, :unauthorized}
+
+    %{status_code: 200} = r ->
+      parse_json_body(r)
+
+    res ->
+      OK.for do
+        body <- res |> parse_json_body()
+
+        reason <-
+          case Map.fetch(body, :reason) do
+            {:ok, _} = ok ->
+              ok
+
+            :error ->
+              IO.inspect(res)
+              {:error, :unknown_error}
+          end
+      after
+        {:error, reason}
       end
-    
-      def parse_json_body(response) do
-        response
-        |> Map.fetch(:body)
-        ~>> Jason.decode(%{keys: :atoms})
-      end
+  end
+end
+
+def parse_json_body(response) do
+  response
+  |> Map.fetch(:body)
+  ~>> Jason.decode(%{keys: :atoms})
+end
 ```
 
 Every CLI app needs a way to nicely format its outputs. For this, I used Elixir's built-in [IO.ANSI](https://hexdocs.pm/elixir/1.12/IO.ANSI.html) module. Using ANSI sequences allow you to do basic text formatting, like outputting bold or coloured text. I also used the [cli_spinners](https://github.com/blackode/elixir_cli_spinners) library to show some fancy loading spinners. Both modules are pretty straightforward to use. Here's an example code snippet, that shows a spinner while waiting for the user to log in:
 
 ```elixir
-    OK.for do
-          ["Go to: ", :bright, auth_uri] |> IO.ANSI.format() |> IO.puts()
-    
-          token <- CliSpinners.spin_fun(
-            [frames: :dots,
-             text: "Waiting for token...",
-             done: "Got token"],
-            fn -> Auth.poll_token(device_code) end
-          )
-        after
-          IO.puts("Login complete")
-        end
+OK.for do
+  ["Go to: ", :bright, auth_uri] |> IO.ANSI.format() |> IO.puts()
+
+  token <-
+    CliSpinners.spin_fun(
+      [frames: :dots, text: "Waiting for token...", done: "Got token"],
+      fn -> Auth.poll_token(device_code) end
+    )
+after
+  IO.puts("Login complete")
+end
 ```
+
+The result looks like this:
 
 ![](/intention-login.gif)
 
