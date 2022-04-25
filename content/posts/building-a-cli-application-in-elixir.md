@@ -76,7 +76,9 @@ And here's what you get when you run `intention --help`:
 My next task was to figure out how to make HTTP requests to Intention's JSON API. Luckily, this is very simple in Elixir. I used the [HTTPotion](https://github.com/unrelentingtech/httpotion) library for making the actual requests, plus the [Jason](https://github.com/michalmuskala/jason) library to parse the response JSON. Making a request can then be done like so:
 
 ```elixir
-    HTTPotion.get("https://jsonplaceholder.typicode.com/posts/1") |> Map.get(:body) |> Jason.decode
+    HTTPotion.get(url) 
+    |> Map.get(:body) 
+    |> Jason.decode
 ```
 
 This works, but unfortunately doesn't account for errors. The HTTP request may fail due to a bad WiFi connection, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, and it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`? I decided to use error tuples as much as possible. This allows you to write more functional code, which is more easily tested. To help me with this, I used the [OK](https://github.com/CrowdHailer/OK) library. I found taking this approach simplified my error handling code. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`. Here's a `handle_response` function I wrote for handling (possibly failed) HTTP responses:
