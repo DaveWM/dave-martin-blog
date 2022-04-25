@@ -5,7 +5,7 @@ draft = true
 title = "Building a CLI Application in Elixir"
 
 +++
-In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, call a couple of HTTP endpoints in Intention's backend API, and then format the results nicely.
+In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, call a couple of HTTP endpoints in Intention's backend API, and then format the results nicely. 
 
 I use [Clojure](https://clojure.org/) for my day-to-day work, but I wanted to try out a different language. Also, Clojure's slow startup time makes it slightly suboptimal for CLI applications. I initially decided on [Haskell](https://www.haskell.org/). I'd previously only written a few small scripts in Haskell, and was eager to see how I fared writing a full application. Unfortunately, to my despair I quickly found myself bogged down in type errors. I quickly abandoned Haskell after realising that either it's too hard to use for small applications, or that I lack the necessary brainpower to use it properly.
 
@@ -17,7 +17,7 @@ Elixir's build tool is called [Mix](https://hexdocs.pm/mix/1.12/Mix.html). Mix m
 
 You can then start a REPL by running `iex -S mix`, and run some commands:
 
-![](/screenshot-from-2022-04-25-17-28-21.png)
+![](/iex.gif)
 
 Now I had a project set up, I needed a way of parsing command line arguments. I wanted to handle commands like `intention login` and `intention list --all`. I used the excellent Optimus library for this. Optimus made it dead easy to set up multiple subcommands, each with their own allowed arguments. You can also set a help message for each subcommand and argument, which makes it easy to create a great user experience. To get started, it's as simple as calling `optimus = Optimus.new!(...)`, then `Optimus.parse(optimus, args)`. Here's my (slightly shortened) argument parsing code:
 
