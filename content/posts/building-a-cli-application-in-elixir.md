@@ -27,7 +27,9 @@ You can then start a REPL by running `iex -S mix`, and run some commands:
 
 **Parsing Arguments**
 
-Now I had a project set up, I needed a way of parsing command line arguments. I wanted to handle commands like `intention login` and `intention list --all`. I used the excellent Optimus library for this. Optimus made it dead easy to set up multiple subcommands, each with their own allowed arguments. You can also set a help message for each subcommand and argument, which makes it easy to create a great user experience. To get started, it's as simple as calling `optimus = Optimus.new!(...)`, then `Optimus.parse(optimus, args)`. Here's my (slightly shortened) argument parsing code:
+Now I had a project set up, I needed a way of parsing command line arguments. I wanted to handle commands like `intention login` and `intention list --all`. I used the excellent Optimus library for this. Optimus made it dead easy to set up multiple subcommands, each with their own allowed arguments and help text. Straight out of the box, it handles invalid commands, displays errors, and provides `--help` and `--version` options.
+
+To get started, it's as simple as calling `optimus = Optimus.new!(...)`, then `Optimus.parse(optimus, args)`. Here's my (slightly shortened) argument parsing code:
 
 ```elixir
 optimus =
@@ -95,13 +97,13 @@ HTTPotion.get(url)
 
 This works, but unfortunately doesn't account for errors. The HTTP request may fail due to a bad WiFi connection, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, and it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`?
 
-I decided to use error tuples as much as possible. To help me with this, I used the [OK](https://github.com/CrowdHailer/OK) library. `OK` provides some very useful macros for working with error tuples, most notably: 
+I decided to use error tuples as much as possible. To help me with this, I used the [OK](https://github.com/CrowdHailer/OK) library. `OK` provides some very useful macros for working with error tuples, most notably:
 
-* [for](https://github.com/CrowdHailer/OK#okfor) - similar to Haskell's `do` notation
-* [~>](https://github.com/CrowdHailer/OK#ok-pipe) - a pipe equivalent to `fmap`
-* [~>>](https://github.com/CrowdHailer/OK#ok-pipe) - another pipe quivalent to monadic bind (i.e. `>>=`)
+* [for](https://github.com/CrowdHailer/OK#okfor) - similar to Haskell's ["do" notation](https://wiki.haskell.org/All_About_Monads#Do_notation "do notation example")
+* [\~>](https://github.com/CrowdHailer/OK#ok-pipe) - a pipe equivalent to [fmap](https://medium.com/@pwentz/functors-an-explanation-7e05c5c43fd5 "fmap explanation")
+* [\~>>](https://github.com/CrowdHailer/OK#ok-pipe) - another pipe quivalent to monadic bind (i.e. `>>=`)
 
-I found taking this approach simplified my error handling code. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`. 
+I found taking this approach simplified my error handling code. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`.
 
 As an example, here's a `handle_response` function I wrote for handling HTTP responses:
 
