@@ -5,7 +5,7 @@ draft = true
 title = "Building a CLI Application in Elixir"
 
 +++
-In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, call a couple of HTTP endpoints in Intention's backend API, and then format the results nicely. This will be a fairly high level overview, if you'd prefer a more detailed step by step guide I've linked to a couple at the bottom of the page.
+In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, call a couple of HTTP endpoints in Intention's backend API, and then format the results nicely. This will be a fairly high level overview, if you'd prefer a more detailed step by step guide, I've linked to a couple at the bottom of the page.
 
 **Choosing a Language**
 
