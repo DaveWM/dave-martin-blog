@@ -9,7 +9,9 @@ In this blog post, I'll recount my experience building a CLI application in [Eli
 
 **Choosing a Language**
 
-I use [Clojure](https://clojure.org/) for my day-to-day work, but I wanted to try out a different language. Also, Clojure's slow startup time makes it slightly suboptimal for CLI applications. I initially decided on [Haskell](https://www.haskell.org/). I'd previously only written a few small scripts in Haskell, and was eager to see how I fared writing a full application. Unfortunately, to my despair I quickly found myself bogged down in type errors. I quickly abandoned Haskell after realising that either it's too hard to use for small applications, or that I lack the necessary brainpower to use it properly.
+I use [Clojure](https://clojure.org/) for my day-to-day work, but I wanted to try out a different language. Also, Clojure's slow startup time makes it slightly suboptimal for CLI applications.
+
+I initially decided to try [Haskell](https://www.haskell.org/). I'd previously only written a few small scripts in Haskell, and was eager to see how I fared writing a full application. Unfortunately, to my despair I quickly found myself bogged down in type errors. I quickly abandoned Haskell after realising that either it's too hard to use for small applications, or that I lack the necessary brainpower to use it properly.
 
 I started looking instead for a dynamically typed language that would be suitable . I found this in [Elixir](https://elixir-lang.org/ "Elixir Language"). Elixir is a dynamically typed, functional language with a Ruby style syntax. It runs on the Erlang VM (BEAM) and has been going since 2012, so it's a fairly mature language. The Erlang VM starts up very quickly, so it's a good fit for CLI applications. It has a nice interactive REPL (IEx), plus a few features inspired by Clojure such as macros and protocols. All this made the language very appealing, so I decided to give it a go.
 
