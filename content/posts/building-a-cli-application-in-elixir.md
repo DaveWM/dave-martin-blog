@@ -1,21 +1,21 @@
 +++
 date = 2022-04-26T12:00:00Z
 description = "Building a CLI in Elixir, using Mix, Optimus, OK, HTTPotion, and escript"
-draft = true
+draft = false
 title = "Building a CLI Application in Elixir"
 
 +++
-In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, call a couple of HTTP endpoints in Intention's backend API, and then format the results nicely. This will be a fairly high level overview, if you'd prefer a more detailed step by step guide, I've linked to a couple at the bottom of the page.
+In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, then call a couple of HTTP endpoints in Intention's backend API and show the results. This will be a fairly high level overview, if you'd prefer a more detailed step by step guide, I've linked to a couple at the bottom of the page.
 
-**Choosing a Language**
+**Choosing a language**
 
 I use [Clojure](https://clojure.org/) for my day-to-day work, but I wanted to try out a different language. Also, Clojure's slow startup time makes it slightly suboptimal for CLI applications.
 
 I initially decided to try [Haskell](https://www.haskell.org/). I'd previously only written a few small scripts in Haskell, and was eager to see how I fared writing a full application. Unfortunately, to my despair I quickly found myself bogged down in type errors. I quickly abandoned Haskell after realising that either it's too hard to use for small applications, or that I lack the necessary brainpower to use it properly.
 
-I started looking instead for a dynamically typed language that would be suitable . I found this in [Elixir](https://elixir-lang.org/ "Elixir Language"). Elixir is a dynamically typed, functional language with a Ruby style syntax. It runs on the Erlang VM (BEAM) and has been going since 2012, so it's a fairly mature language. The Erlang VM starts up very quickly, so it's a good fit for CLI applications. It has a nice interactive REPL (IEx), plus a few features inspired by Clojure such as macros and protocols. All this made the language very appealing, so I decided to give it a go.
+I started looking instead for a suitable dynamically typed language. I found this in [Elixir](https://elixir-lang.org/ "Elixir Language"), a dynamically typed, functional language with a Ruby style syntax. It runs on the Erlang VM (BEAM) and has been going since 2012, so it's a stable and fairly mature language. The Erlang VM starts up very quickly, so it's a good fit for CLI applications. Elixir also has a nice interactive REPL (IEx), plus a few features inspired by Clojure such as macros and protocols. All this made the language very appealing, so I decided to give it a go.
 
-**Getting Started**
+**Getting started**
 
 Elixir's build tool is called [Mix](https://hexdocs.pm/mix/1.12/Mix.html). Mix manages your project's dependencies, compiles your application, runs tests, and can generate new project skeletons. To get started, all you need to do is install Elixir and Mix, then run `mix new [application name]`. This generates a basic project structure like this:
 
@@ -25,7 +25,7 @@ You can then start a REPL by running `iex -S mix`, and run some commands:
 
 ![](/iex.gif)
 
-**Parsing Arguments**
+**Parsing arguments**
 
 Now I had a project set up, I needed a way of parsing command line arguments. I wanted to handle commands like `intention login` and `intention list --all`. I used the excellent [Optimus](https://github.com/funbox/optimus) library for this. Optimus made it dead easy to set up multiple subcommands, each with their own allowed arguments and help text. Straight out of the box, it handles invalid commands, displays errors, and provides `--help` and `--version` options.
 
@@ -85,7 +85,7 @@ And here's what you get when you run `intention --help`:
 
 ![](/screenshot-from-2022-04-25-17-35-29.png)
 
-**Making HTTP Requests, with Error Handling**
+**Making HTTP requests, and handling errors**
 
 My next task was to figure out how to make HTTP requests to Intention's JSON API. Luckily, this is very simple in Elixir. I used the [HTTPotion](https://github.com/unrelentingtech/httpotion) library for making the actual requests, plus the [Jason](https://github.com/michalmuskala/jason) library to parse the response JSON. Making a request can then be done like so:
 
@@ -95,7 +95,7 @@ HTTPotion.get(url)
 |> Jason.decode()
 ```
 
-This works, but unfortunately doesn't account for errors. The HTTP request may fail due to a bad WiFi connection, because the authentication token is invalid, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, and it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`?
+This works well when the request succeeds, but what about when it fails? The request may fail due to a bad WiFi connection, because the authentication token is invalid, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, but it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`?
 
 I decided to use error tuples as much as possible. To help me with this, I used the [OK](https://github.com/CrowdHailer/OK) library. `OK` provides some very useful macros for working with error tuples, most notably:
 
@@ -103,11 +103,12 @@ I decided to use error tuples as much as possible. To help me with this, I used 
 * [\~>](https://github.com/CrowdHailer/OK#ok-pipe) - a pipe equivalent to [fmap](https://medium.com/@pwentz/functors-an-explanation-7e05c5c43fd5 "fmap explanation")
 * [\~>>](https://github.com/CrowdHailer/OK#ok-pipe) - another pipe quivalent to [monadic bind](https://medium.com/@nitinpatel_20236/what-does-the-phrase-monadic-bind-mean-a2184f34b2e3 "monadic bind explanation") (i.e. `>>=`)
 
-I found taking this approach simplified my error handling code, and made it easier to handle HTTP request failures. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`.
+I found taking this approach simplified my error handling code. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`.
 
 As an example, here's a `handle_response` function I wrote for handling HTTP responses:
 
 ```elixir
+# Used like `HTTPotion.get(url) |> handle_response`
 def handle_response(res) do
   case res do
     %{status_code: 401} ->
@@ -141,7 +142,7 @@ def parse_json_body(response) do
 end
 ```
 
-**Output Formatting**
+**Output formatting**
 
 Most CLI apps need a way to nicely format their output. For this, I used Elixir's built-in [IO.ANSI](https://hexdocs.pm/elixir/1.12/IO.ANSI.html) module. Using [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code "ANSI") sequences allow you to do basic text formatting, like outputting bold or coloured text. I also used the [cli_spinners](https://github.com/blackode/elixir_cli_spinners) library to show some fancy loading spinners. Both modules are pretty straightforward to use. Here's an example code snippet, that shows a spinner while waiting for the user to log in:
 
