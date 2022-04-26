@@ -101,9 +101,9 @@ I decided to use error tuples as much as possible. To help me with this, I used 
 
 * [for](https://github.com/CrowdHailer/OK#okfor) - similar to Haskell's ["do" notation](https://wiki.haskell.org/All_About_Monads#Do_notation "do notation example")
 * [\~>](https://github.com/CrowdHailer/OK#ok-pipe) - a pipe equivalent to [fmap](https://medium.com/@pwentz/functors-an-explanation-7e05c5c43fd5 "fmap explanation")
-* [\~>>](https://github.com/CrowdHailer/OK#ok-pipe) - another pipe quivalent to monadic bind (i.e. `>>=`)
+* [\~>>](https://github.com/CrowdHailer/OK#ok-pipe) - another pipe quivalent to [monadic bind](https://medium.com/@nitinpatel_20236/what-does-the-phrase-monadic-bind-mean-a2184f34b2e3 "monadic bind explanation") (i.e. `>>=`)
 
-I found taking this approach simplified my error handling code. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`.
+I found taking this approach simplified my error handling code, and made it easier to work with HTTP requests. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`.
 
 As an example, here's a `handle_response` function I wrote for handling HTTP responses:
 
@@ -143,7 +143,7 @@ end
 
 **Output Formatting**
 
-Every CLI app needs a way to nicely format its outputs. For this, I used Elixir's built-in [IO.ANSI](https://hexdocs.pm/elixir/1.12/IO.ANSI.html) module. Using ANSI sequences allow you to do basic text formatting, like outputting bold or coloured text. I also used the [cli_spinners](https://github.com/blackode/elixir_cli_spinners) library to show some fancy loading spinners. Both modules are pretty straightforward to use. Here's an example code snippet, that shows a spinner while waiting for the user to log in:
+Every CLI app needs a way to nicely format its outputs. For this, I used Elixir's built-in [IO.ANSI](https://hexdocs.pm/elixir/1.12/IO.ANSI.html) module. Using [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code "ANSI") sequences allow you to do basic text formatting, like outputting bold or coloured text. I also used the [cli_spinners](https://github.com/blackode/elixir_cli_spinners) library to show some fancy loading spinners. Both modules are pretty straightforward to use. Here's an example code snippet, that shows a spinner while waiting for the user to log in:
 
 ```elixir
 OK.for do
