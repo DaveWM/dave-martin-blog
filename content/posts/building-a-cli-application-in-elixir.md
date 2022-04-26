@@ -7,6 +7,8 @@ title = "Building a CLI Application in Elixir"
 +++
 In this blog post, I'll recount my experience building a CLI application in [Elixir](https://elixir-lang.org/). I needed to build a CLI for [Intention](https://about.i.ntention.app/), a web app for goal tracking that I wrote last year. The CLI wasn't very complicated - it just needed to authenticate, call a couple of HTTP endpoints in Intention's backend API, and then format the results nicely. This will be a fairly high level overview, if you'd prefer a more detailed step by step guide I've linked to a couple at the bottom of the page.
 
+**Choosing a Language**
+
 I use [Clojure](https://clojure.org/) for my day-to-day work, but I wanted to try out a different language. Also, Clojure's slow startup time makes it slightly suboptimal for CLI applications. I initially decided on [Haskell](https://www.haskell.org/). I'd previously only written a few small scripts in Haskell, and was eager to see how I fared writing a full application. Unfortunately, to my despair I quickly found myself bogged down in type errors. I quickly abandoned Haskell after realising that either it's too hard to use for small applications, or that I lack the necessary brainpower to use it properly.
 
 I started looking instead for a dynamically typed language that would be suitable . I found this in [Elixir](https://elixir-lang.org/ "Elixir Language"). Elixir is a dynamically typed, functional language with a Ruby style syntax. It runs on the Erlang VM (BEAM) and has been going since 2012, so it's a fairly mature language. The Erlang VM starts up very quickly, so it's a good fit for CLI applications. It has a nice interactive REPL (IEx), plus a few features inspired by Clojure such as macros and protocols. All this made the language very appealing, so I decided to give it a go.
@@ -79,7 +81,7 @@ And here's what you get when you run `intention --help`:
 
 ![](/screenshot-from-2022-04-25-17-35-29.png)
 
-**Making HTTP Requests**
+**Making HTTP Requests, with Error Handling**
 
 My next task was to figure out how to make HTTP requests to Intention's JSON API. Luckily, this is very simple in Elixir. I used the [HTTPotion](https://github.com/unrelentingtech/httpotion) library for making the actual requests, plus the [Jason](https://github.com/michalmuskala/jason) library to parse the response JSON. Making a request can then be done like so:
 
@@ -89,7 +91,17 @@ HTTPotion.get(url)
 |> Jason.decode()
 ```
 
-This works, but unfortunately doesn't account for errors. The HTTP request may fail due to a bad WiFi connection, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, and it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`? I decided to use error tuples as much as possible. This allows you to write more functional code, which is more easily tested. To help me with this, I used the [OK](https://github.com/CrowdHailer/OK) library. I found taking this approach simplified my error handling code. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`. Here's a `handle_response` function I wrote for handling (possibly failed) HTTP responses:
+This works, but unfortunately doesn't account for errors. The HTTP request may fail due to a bad WiFi connection, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, and it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`?
+
+I decided to use error tuples as much as possible. To help me with this, I used the [OK](https://github.com/CrowdHailer/OK) library. `OK` provides some very useful macros for working with error tuples, most notably: 
+
+* [for](https://github.com/CrowdHailer/OK#okfor) - similar to Haskell's `do` notation
+* [~>](https://github.com/CrowdHailer/OK#ok-pipe) - a pipe equivalent to `fmap`
+* [~>>](https://github.com/CrowdHailer/OK#ok-pipe) - another pipe quivalent to monadic bind (i.e. `>>=`)
+
+I found taking this approach simplified my error handling code. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`. 
+
+As an example, here's a `handle_response` function I wrote for handling HTTP responses:
 
 ```elixir
 def handle_response(res) do
@@ -124,6 +136,8 @@ def parse_json_body(response) do
   ~>> Jason.decode(%{keys: :atoms})
 end
 ```
+
+**Output Formatting**
 
 Every CLI app needs a way to nicely format its outputs. For this, I used Elixir's built-in [IO.ANSI](https://hexdocs.pm/elixir/1.12/IO.ANSI.html) module. Using ANSI sequences allow you to do basic text formatting, like outputting bold or coloured text. I also used the [cli_spinners](https://github.com/blackode/elixir_cli_spinners) library to show some fancy loading spinners. Both modules are pretty straightforward to use. Here's an example code snippet, that shows a spinner while waiting for the user to log in:
 
