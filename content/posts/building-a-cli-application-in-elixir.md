@@ -27,7 +27,7 @@ You can then start a REPL by running `iex -S mix`, and run some commands:
 
 **Parsing Arguments**
 
-Now I had a project set up, I needed a way of parsing command line arguments. I wanted to handle commands like `intention login` and `intention list --all`. I used the excellent Optimus library for this. Optimus made it dead easy to set up multiple subcommands, each with their own allowed arguments and help text. Straight out of the box, it handles invalid commands, displays errors, and provides `--help` and `--version` options.
+Now I had a project set up, I needed a way of parsing command line arguments. I wanted to handle commands like `intention login` and `intention list --all`. I used the excellent [Optimus](https://github.com/funbox/optimus) library for this. Optimus made it dead easy to set up multiple subcommands, each with their own allowed arguments and help text. Straight out of the box, it handles invalid commands, displays errors, and provides `--help` and `--version` options.
 
 To get started, it's as simple as calling `optimus = Optimus.new!(...)`, then `Optimus.parse(optimus, args)`. Here's my (slightly shortened) argument parsing code:
 
@@ -95,7 +95,7 @@ HTTPotion.get(url)
 |> Jason.decode()
 ```
 
-This works, but unfortunately doesn't account for errors. The HTTP request may fail due to a bad WiFi connection, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, and it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`?
+This works, but unfortunately doesn't account for errors. The HTTP request may fail due to a bad WiFi connection, because the authentication token is invalid, or perhaps because the response body is not valid JSON. Elixir has a try/catch mechanism for error handling, and it's also common for library functions to return error tuples in the format `{:ok, value} | {:error, reason}`. As in other languages which take this approach, it can be unclear when to use which mechanism. I've found this is especially true when dealing with HTTP requests - should a `500` response trigger an exception, or be returned as `{:error, "error response"}`?
 
 I decided to use error tuples as much as possible. To help me with this, I used the [OK](https://github.com/CrowdHailer/OK) library. `OK` provides some very useful macros for working with error tuples, most notably:
 
@@ -143,7 +143,7 @@ end
 
 **Output Formatting**
 
-Every CLI app needs a way to nicely format its outputs. For this, I used Elixir's built-in [IO.ANSI](https://hexdocs.pm/elixir/1.12/IO.ANSI.html) module. Using [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code "ANSI") sequences allow you to do basic text formatting, like outputting bold or coloured text. I also used the [cli_spinners](https://github.com/blackode/elixir_cli_spinners) library to show some fancy loading spinners. Both modules are pretty straightforward to use. Here's an example code snippet, that shows a spinner while waiting for the user to log in:
+Most CLI apps need a way to nicely format their output. For this, I used Elixir's built-in [IO.ANSI](https://hexdocs.pm/elixir/1.12/IO.ANSI.html) module. Using [ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code "ANSI") sequences allow you to do basic text formatting, like outputting bold or coloured text. I also used the [cli_spinners](https://github.com/blackode/elixir_cli_spinners) library to show some fancy loading spinners. Both modules are pretty straightforward to use. Here's an example code snippet, that shows a spinner while waiting for the user to log in:
 
 ```elixir
 OK.for do
@@ -165,14 +165,24 @@ The result looks like this:
 
 **Distribution**
 
-Now we come to the final piece of the puzzle - how do you bundle your code into a distributable application? Handily, Elixir comes bundled with the [escript](https://elixirschool.com/en/lessons/intermediate/escripts#building-2) utility for this. You simply put your code in a `main` function, add an `escript` field to your project's `mix.exs`, and then run `mix escript.build`. This will create an executable file. The only caveat I found is that the resulting executable depends on the Erlang VM. I tried out [bakeware](https://github.com/bake-bake-bake/bakeware) and [burrito](https://github.com/burrito-elixir/burrito) to get around this, but unfortunately neither of them seem to play nicely with my OS (NixOS) and I couldn't get them working.
+Now we come to the final piece of the puzzle - how do you bundle your code into a distributable application? Handily, Elixir comes bundled with the [escript](https://elixirschool.com/en/lessons/intermediate/escripts#building-2) utility for this. You simply put your code in a `main` function, add an `escript` field to your project's `mix.exs`, and then run `mix escript.build`. This will create an executable file. The only caveat I found is that you need the Erlang VM installed to run the resulting executable. I tried out [bakeware](https://github.com/bake-bake-bake/bakeware) and [burrito](https://github.com/burrito-elixir/burrito) to get around this, but unfortunately neither of them seem to play nicely with my OS (NixOS) and I couldn't get them working.
 
 **Summary**
 
-I really liked working with Elixir. I found it easy to get started, IEx is great, and the overall language is well designed and intuitive. If you're using Emacs, [Alchemist](https://alchemist.readthedocs.io/en/latest/) gives you some fantastic tooling, including an integrated REPL. I'd definitely use Elixir again for writing a CLI app. I'd also like to try out [Phoenix](https://www.phoenixframework.org/), a Ruby On Rails style web framework for Elixir. [LiveView](https://github.com/phoenixframework/phoenix_live_view) in particular looks very interesting. If you're looking to try out a new language, I'd highly recommend Elixir. If you want to check out the source code for the Intention CLI, you can find it [here](https://github.com/DaveWM/intention-cli "Intention CLI source"). Thanks for reading!
+This is what the resulting CLI looks like:
+
+![](/intention-cli-demo.gif)
+
+(these aren't my real goals by the way 😛)
+
+If you'd like to test it out yourself, you can download the executable from [here](https://github.com/DaveWM/intention-cli/releases/tag/0.1.0). If you'd like to check out the source code, you can find it [here](https://github.com/DaveWM/intention-cli "Intention CLI source").
+
+I really liked working with Elixir. I found it easy to get started, IEx is great, and the overall language is well designed and intuitive. If you're using Emacs, [Alchemist](https://alchemist.readthedocs.io/en/latest/) gives you some fantastic tooling, including an integrated REPL. I'd definitely use Elixir again for writing a CLI app. I'd also like to try out [Phoenix](https://www.phoenixframework.org/), a Ruby On Rails style web framework for Elixir. [LiveView](https://github.com/phoenixframework/phoenix_live_view) in particular looks very interesting. If you're looking to try out a new language, I'd highly recommend Elixir. Thanks for reading!
+
+
 
 _Further Reading_
 
-[https://hackernoon.com/elixir-console-application-with-json-parsing-lets-print-to-console-b701abf1cb14](https://hackernoon.com/elixir-console-application-with-json-parsing-lets-print-to-console-b701abf1cb14 "https://hackernoon.com/elixir-console-application-with-json-parsing-lets-print-to-console-b701abf1cb14")
-
-[https://medium.com/blackode/writing-the-command-line-application-in-elixir-78a8d1b1850](https://medium.com/blackode/writing-the-command-line-application-in-elixir-78a8d1b1850 "https://medium.com/blackode/writing-the-command-line-application-in-elixir-78a8d1b1850")
+* [Elixir console application with JSON parsing](https://hackernoon.com/elixir-console-application-with-json-parsing-lets-print-to-console-b701abf1cb14 "https://hackernoon.com/elixir-console-application-with-json-parsing-lets-print-to-console-b701abf1cb14")
+* [How to Develop a Command Line Application in Elixir?](https://medium.com/blackode/writing-the-command-line-application-in-elixir-78a8d1b1850 "https://medium.com/blackode/writing-the-command-line-application-in-elixir-78a8d1b1850")
+* [Writing a command line app in Elixir](https://whatdidilearn.info/2017/12/10/writing-command-line-app-in-elixir.html)
