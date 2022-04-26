@@ -103,7 +103,7 @@ I decided to use error tuples as much as possible. To help me with this, I used 
 * [\~>](https://github.com/CrowdHailer/OK#ok-pipe) - a pipe equivalent to [fmap](https://medium.com/@pwentz/functors-an-explanation-7e05c5c43fd5 "fmap explanation")
 * [\~>>](https://github.com/CrowdHailer/OK#ok-pipe) - another pipe quivalent to [monadic bind](https://medium.com/@nitinpatel_20236/what-does-the-phrase-monadic-bind-mean-a2184f34b2e3 "monadic bind explanation") (i.e. `>>=`)
 
-I found taking this approach simplified my error handling code, and made it easier to work with HTTP requests. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`.
+I found taking this approach simplified my error handling code, and made it easier to handle HTTP request failures. However, due to Elixir's dynamic typing you do have to be careful to use it correctly. It's very easy to accidentally use `~>>` instead of `~>` or `|>`.
 
 As an example, here's a `handle_response` function I wrote for handling HTTP responses:
 
@@ -165,7 +165,7 @@ The result looks like this:
 
 **Distribution**
 
-Now we come to the final piece of the puzzle - how do you bundle your code into a distributable application? Handily, Elixir comes bundled with the [escript](https://elixirschool.com/en/lessons/intermediate/escripts#building-2) utility for this. You simply put your code in a `main` function, add an `escript` field to your project's `mix.exs`, and then run `mix escript.build`. This will create an executable file. The only caveat I found is that the resulting executable depends on the Erlang VM. I tried out [bakeware](https://github.com/bake-bake-bake/bakeware) and [burrito](https://github.com/burrito-elixir/burrito) to get around this, but neither of them seem to play nicely with my OS (NixOS) and unfortunately I couldn't get them working.
+Now we come to the final piece of the puzzle - how do you bundle your code into a distributable application? Handily, Elixir comes bundled with the [escript](https://elixirschool.com/en/lessons/intermediate/escripts#building-2) utility for this. You simply put your code in a `main` function, add an `escript` field to your project's `mix.exs`, and then run `mix escript.build`. This will create an executable file. The only caveat I found is that the resulting executable depends on the Erlang VM. I tried out [bakeware](https://github.com/bake-bake-bake/bakeware) and [burrito](https://github.com/burrito-elixir/burrito) to get around this, but unfortunately neither of them seem to play nicely with my OS (NixOS) and I couldn't get them working.
 
 **Summary**
 
