@@ -169,7 +169,7 @@ Now we come to the final piece of the puzzle - how do you bundle your code into 
 
 **Summary**
 
-I really liked working with Elixir. I found it easy to get started, IEx is great, and the overall language is well designed and intuitive. If you're using Emacs, [Alchemist](https://alchemist.readthedocs.io/en/latest/) gives you some fantastic tooling, including an integrated REPL. I'd definitely use Elixir again for writing a CLI app. I'd also like to try out [Phoenix](https://www.phoenixframework.org/), a Ruby On Rails style web framework for Elixir. [LiveView](https://github.com/phoenixframework/phoenix_live_view) in particular looks very interesting. If you're looking to try out a new language, I'd highly recommend Elixir. If you want to check out the source code for the Intention CLI, you can find it here. Thanks for reading!
+I really liked working with Elixir. I found it easy to get started, IEx is great, and the overall language is well designed and intuitive. If you're using Emacs, [Alchemist](https://alchemist.readthedocs.io/en/latest/) gives you some fantastic tooling, including an integrated REPL. I'd definitely use Elixir again for writing a CLI app. I'd also like to try out [Phoenix](https://www.phoenixframework.org/), a Ruby On Rails style web framework for Elixir. [LiveView](https://github.com/phoenixframework/phoenix_live_view) in particular looks very interesting. If you're looking to try out a new language, I'd highly recommend Elixir. If you want to check out the source code for the Intention CLI, you can find it [here](https://github.com/DaveWM/intention-cli "Intention CLI source"). Thanks for reading!
 
 _Further Reading_
 
