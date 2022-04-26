@@ -1,6 +1,6 @@
 +++
 date = 2022-04-25T23:00:00Z
-description = "An of how I built a CLI for Intention in Elixir"
+description = "Building a CLI in Elixir, using Mix, Optimus, OK, HTTPotion, and escript"
 draft = true
 title = "Building a CLI Application in Elixir"
 
