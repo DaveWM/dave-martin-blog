@@ -18,3 +18,8 @@ theme = "vienna"
 [markup]
   [markup.blackFriday]
     hrefTargetBlank = true
+  [markup.highlight]
+    noClasses = true
+    codeFences = false
+    noHl = true
+    style = ''
