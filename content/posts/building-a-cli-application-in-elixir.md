@@ -1,5 +1,5 @@
 +++
-date = 2022-04-25T23:00:00Z
+date = 2022-04-26T12:00:00Z
 description = "Building a CLI in Elixir, using Mix, Optimus, OK, HTTPotion, and escript"
 draft = true
 title = "Building a CLI Application in Elixir"

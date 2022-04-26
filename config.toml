@@ -14,3 +14,7 @@ theme = "vienna"
   avatar = "/images/profile-small.jpg"
   description = "A blog about front-end and back-end functional programming"
   portfolio = "https://davemartin.me"
+
+[markup]
+  [markup.blackFriday]
+    hrefTargetBlank = true
