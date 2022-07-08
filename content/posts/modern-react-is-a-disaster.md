@@ -11,24 +11,52 @@ To some extent, it has been successful in this. I'm not *absolutely* against hoo
 
 Firstly, allow me to steelman the argument for hooks. Say you have a `Todo` component, written using the class API: 
 ```javascript
-export default class Todo extends React.Component { constructor(props) { super(props); this.state = { text: null }; } render() { return (
- this.setState({text: e.target.value})} />Value is: {this.state.text}
-); } }
+export default class Todo extends React.Component {
+  constructor(props) {
+      super(props);
+      this.state = {
+          text: null
+      };
+  }
+
+  render() {
+      return (
+        <div>
+          <input type="text" onChange={(e) => this.setState({text: e.target.value})} />
+          <span>Value is: {this.state.text}</span>
+        </div>
+      );
+  }
+}
 ``` 
 Using hooks, you can shorten it to this: 
 ```javascript
-function Todo(){ const [text, setText] = useState(null); return (
- setText(e.target.value)} />Value is: {text}
-); } 
+function Todo(){
+  const [text, setText] = useState(null);
+  return (
+    <div>
+      <input type="text" onChange={(e) => setText(e.target.value)} />
+      <span>Value is: {text}</span>
+    </div>
+  );
+}
 ```
 This is both terser and clearer. You don't need any knowledge about classes, constructors, inheritance, or the `super` keyword. Hooks allow you to write components as a function. You don't have to think about lifecycle methods (`componentDidMount`, `componentDidUpdate`, etc.). Hooks are more composable and reduce repetition.
 
 Unfortunately when you overuse hooks, things quickly go off the rails. Taking our example from above, let's add an input property and a simple side effect: 
 ```javascript 
-function Todo({done}){ const [text, setText] = useState(null); useEffect(() => { console.log(`Todo ${text}, ${done ? "done" : "in progress"}`); }, [text]); return (
-
- setText(e.target.value)} />Value is: {text}
-); }
+function Todo({done}){
+  const [text, setText] = useState(null);
+  useEffect(() => {
+    console.log(`Todo ${text}, ${done ? "done" : "in progress"}`);
+  }, [text]);
+  return (
+    <div>
+      <input type="text" onChange={(e) => setText(e.target.value)} />
+      <span>Value is: {text}</span>
+    </div>
+  );
+}
 ``` 
 At first glance that looks great. However, on closer inspection we've introduced a bug! We're reading the `done` property in the `useEffect` function, but we haven't added it to the dependencies array. This may seem trivial to fix, but it can be extremely difficult to track down bugs like this. In my experience the dependencies array is an endless source of bugs. Linters can help, but don't eliminate these bugs. Another "gotcha" occurs if you use anything other than a primitive value as a dependency. This is never mentioned in the documentation. I have spent many hours tracking down these types of bugs, and have no desire to spend any more.
 
@@ -36,19 +64,50 @@ Another major hurdle is the infamous "Rules of Hooks". These approximate to "the
 
 Hooks are more composable than classes, but less so than functions. Consider the following component, that makes 2 effects - `foo` and `bar`: 
 ```js
-function useDoSomething(message) { useEffect(() => { setTimeout(() => { console.log(message); }, Math.random() * 1000) }, []); } function App() { useDoSomething("foo"); useDoSomething("bar"); return
+function useDoSomething(message) {
+  useEffect(() => {
+   setTimeout(() => {
+     console.log(message);
+   }, Math.random() * 1000) 
+  }, []);
+}
 
-  App; } 
+function App() {
+  useDoSomething("foo");
+  useDoSomething("bar");
+
+  return <div>App</div>;
+}
 ``` 
 There is no output of the `foo` and `bar` effects. We just want to trigger them when the component is mounted. Now suppose we want to trigger a third effect, `baz`, once `foo` and `bar` have completed. This is surprisingly difficult to do using hooks. We have to add an output to `useDoSomething`, and then use it to conditionally execute `baz` like so: 
 ```js
-function useDoSomething(message) { const [done, setDone] = useState(false); useEffect(() => { setTimeout(() => { console.log(message); setDone(true); }, Math.random() * 1000) }, []); return done; } function useDoSomethingElse(message, dependencies) { useEffect(() => { if(dependencies.every(x => x)){ console.log(message); } }, dependencies); } function App() { const foo = useDoSomething("foo"); const bar = useDoSomething("bar"); useDoSomethingElse("baz", [foo, bar]); return
+function useDoSomething(message) {
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+   setTimeout(() => {
+     console.log(message);
+     setDone(true);
+   }, Math.random() * 1000) 
+  }, []);
+  return done;
+}
 
-App
+function useDoSomethingElse(message, dependencies) {
+  useEffect(() => {
+    if(dependencies.every(x => x)){
+      console.log(message);
+    }
+  }, dependencies);
+}
 
+function App() {
+  const foo = useDoSomething("foo");
+  const bar = useDoSomething("bar");
 
+  useDoSomethingElse("baz", [foo, bar]);
 
-; } 
+  return <div>App</div>;
+}
 ```
 This works, but it's counterintuitive to say the least. Similar code using promises is far more understandable. The reason for this, fundamentally, is that composing hooks is difficult. The only tools you have for composition are state and the dependencies array. While they can be used to craft elegant solutions, in the vast majority of situations they are very clunky.
 
@@ -58,14 +117,31 @@ The drawbacks I've outlined above are major hinderances, but ones that can in pr
 
 As a framework, React is severely lacking. To demonstrate this, let's compare some modern React code to good ol' AngularJS: 
 ```js
-function Counter() { const [counter, setCounter] = useState(0); useEffect(() => { console.log(counter); }, [counter]); return (
+function Counter() {
+  const [counter, setCounter] = useState(0);
 
-Count is: {counter} setCounter(counter + 1)}>Clicky
+  useEffect(() => {
+    console.log(counter);
+  }, [counter]);
 
-); }
+  return (<div>
+    <span>Count is: {counter}</span>
+    <button onClick={() => setCounter(counter + 1)}>Clicky</button>
+  </div>);
+}
 ```
 ```js
-// Template Count is: {{counter}}Clicky // Controller angular.module('app').controller("CounterController", function($scope){ $scope.counter = 0; $scope.watch('counter', (val) => console.log(val)); }); 
+// Template
+<body ng-app="app" ng-controller="CounterController">
+  <span>Count is: {{counter}}</span>
+  <button ng-click="counter = counter + 1">Clicky</button>
+</body>
+
+// Controller
+angular.module('app').controller("CounterController", function($scope){
+  $scope.counter = 0;
+  $scope.watch('counter', (val) => console.log(val));
+});
 ```
 It doesn't appear that we've made massive strides, at least for this simple example. The AngularJS code is shorter, and more straightforward. AngularJS provided many tools and conveniences that React does not. AngularJS gave you dependency injection, 2-way binding (including with child components), services/factories, and even an event bus in the form of `$emit`. These all helped you constrain the complexity inherent in using local state and side effects. It's also interesting to note that using multiple chained `$scope.$watch`s was always deemed an antipattern. By contrast, hooks both encourage and require this pattern. To be clear, I'm not advocating that Google resurrect AngularJS or that it was strictly better than modern React. My point is that React has come full circle. It now very much resembles the frameworks it sought to supplant, except without a lot of the features that those frameworks provided.
 
