@@ -140,13 +140,13 @@ Functional architectures usually look something like the flux architecture (alth
 
 ## The main problem with hooks
 
-This brings me to the main reason I'm against hooks. When you rely entirely on hooks you inevitably end up with an OO architecture, but without any of the tools you need to manage and synchronise local state. Hooks push you towards storing mutable state in components. This state often needs to be synchronised with the rother components, but React doesn't provide any tools to help with this. You're left with just props and callbacks. Components can freely make side effects, which makes testing very difficult. You need dependency injection to make testing feasible, but React doesn't provide it. You also need a way of setting a component's internal state, but again React won't help you here.
+This brings me to the main reason I'm against hooks. When you rely entirely on hooks you inevitably end up with an OO architecture, but without any of the tools you need to manage and synchronise local state. Hooks push you towards storing mutable state in components. This state often needs to be synchronised with the other components, but React doesn't provide any tools to help with this. You're left with just props and callbacks. Components can freely make side effects, which makes testing very difficult. You need dependency injection to make testing feasible, but React doesn't provide it. You also need a way of setting a component's internal state, but again React won't help you here.
 
 This is a far cry from what React was originally intended for. React was never intended to be used as a framework. It was designed as the view layer of a functional architecture - [the "V" in MVC](https://web.archive.org/web/20140321012426/http://facebook.github.io/react). Facebook used (and still uses, as far as I know) React as the view layer of their flux architecture. Lee Byron, a developer on the React team, explained this at length in a 2013 [Quora post](https://www.quora.com/How-is-Facebooks-React-JavaScript-library-How-does-it-compare-with-other-popular-JavaScript-libraries/answer/Lee-Byron). One of the React team's earliest blog posts, published in June 2013, states:
 
 > React is a library for building composable user interfaces. It encourages the creation of reusable UI components which present data that changes over time.
 
-React was initially introduced as an alternative to increasingly overbearing UI frameworks like AngularJS. These frameworks had become large, complex, and difficult to use. Unfortunately, now the prevailing belief in the JS community is that React should be used as a framework. There are even some rather grandiose claims that it is [closer to a language](https://twitter.com/dan_abramov/status/1093698629708251136).
+React was initially introduced as an alternative to increasingly overbearing UI frameworks like AngularJS. These frameworks had become large, complex, and cumbersome. Unfortunately, now it seems that the prevailing belief is that React should be used as a framework. I don't think anything could be further from the truth.
 
 ### Comparison with AngularJS
 
