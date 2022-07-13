@@ -1,8 +1,8 @@
 +++
-date = 2022-07-07T23:00:00Z
-description = "React's hooks API has been a disaster for web development"
+date = 2022-07-14T23:00:00Z
+description = "A critique of React's hooks API, and an explanation of why it's insufficient as a web development framework"
 draft = true
-title = "React Hooks considered harmful"
+title = "Critique of Pure Hooks"
 
 +++
 As you may have guessed from the title, I'm not a big fan of React's hooks API. I'm not _absolutely_ against hooks, and I do think they can be used effectively as part of a larger framework. However it's my strongly held opinion that by themselves, hooks are not sufficient to build complex web apps.
