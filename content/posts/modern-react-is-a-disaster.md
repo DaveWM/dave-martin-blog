@@ -5,7 +5,7 @@ draft = true
 title = "Critique of Pure Hooks"
 
 +++
-As you may have guessed from the title, I'm not a big fan of React's hooks API. I'm not _absolutely_ against hooks, and I do think they can be used effectively as part of a larger framework. However it's my strongly held opinion that by themselves, hooks are not sufficient to build complex web apps.
+As you may have guessed from the title, I'm not a big fan of React's hooks API. I'm not _absolutely_ against hooks, and I do think they can be used effectively as part of a larger framework. However it's my strongly held opinion that in and of themselves, hooks are not sufficient to build complex web apps.
 
 I've now worked on 3 React applications which heavily use hooks. Each time the code quickly became bloated, difficult to understand, and full of bugs. I'm very much against the, seemingly ubiquitous, belief that hooks obviate any need to architect your application. Nothing could be further from the truth. Simply put - React is not suitable as a framework. In this post, I hope to convince you of that.
 
@@ -69,7 +69,7 @@ function Todo({done}){
 }
 ```
 
-At first glance this looks great. However, on closer inspection we've introduced a bug! We're reading the `done` property in the `useEffect` function, but we haven't added it to the dependencies array. This means the effect won't be run when `done` changes. This may seem trivial to fix, but it can be extremely difficult to track down bugs like this. In my experience the dependencies array is an endless source of bugs. Linters can help, but don't eliminate these bugs. Another "gotcha" occurs if you use anything other than a primitive value as a dependency. This is never mentioned in the documentation. I have personally spent many hours tracking down these types of bugs, and this seems like a common experience among all React developers.
+At first glance this looks great. However, on closer inspection we've introduced a bug! We're reading the `done` property in the `useEffect` function, but we haven't added it to the dependencies array. This means the effect won't be run when `done` changes. This may seem trivial to fix, but it can be extremely difficult to track down bugs like this. In my experience the dependencies array is an endless source of bugs. Linters can help, [but don't eliminate](https://typeofweb.com/wady-react-hooks#eslint) these bugs. Another "gotcha" occurs if you use anything other than a primitive value as a dependency. This is never mentioned in the documentation. I have personally spent many hours tracking down these types of bugs, and this seems like a common experience among all React developers.
 
 Unfortunately, that's far from the only drawback of hooks. Testing is always tricky when you have local state in components, but hooks add to this difficulty. With the class API, it was often possible to set a component's state then assert that the output of `render` is correct. In general, with hooks this isn't possible. This is because you can use multiple `useState` hooks within a single component. You are forced to cajole the component into the right state, often by simulating a sequence of UI actions. This is time consuming, tedious, error prone, and leads to bloated tests. Also, you are often forced to add delays, which drastically slow down your tests.
 
