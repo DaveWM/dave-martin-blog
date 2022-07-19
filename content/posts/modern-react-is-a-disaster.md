@@ -7,7 +7,7 @@ title = "Critique of Pure Hooks"
 +++
 As you may have guessed from the title, I'm not a big fan of React's hooks API. I'm not _absolutely_ against hooks, and I do think they can be used effectively as part of a larger framework. However it's my strongly held opinion that in and of themselves, hooks are not sufficient to build complex web apps.
 
-I've now worked on 3 React applications which heavily used hooks. Each time the code quickly became bloated, difficult to understand, and full of bugs. I'm very much against the, seemingly ubiquitous, belief that hooks obviate any need to architect your application. Nothing could be further from the truth. Simply put - React is not suitable as a framework. In this post, I hope to convince you of that.
+I've now worked on 3 React applications which heavily used hooks. Each time the code quickly became bloated, difficult to understand, and full of bugs. I'm very much against the, seemingly ubiquitous, belief that hooks obviate any need to architect your application. Nothing could be further from the truth. In this post, I hope to convince you of that.
 
 ### Why Hooks?
 
