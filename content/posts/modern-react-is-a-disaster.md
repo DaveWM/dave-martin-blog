@@ -138,57 +138,59 @@ OO architectures include MVC/MVVM frameworks like Backbone, Ember, and Angular. 
 
 Functional architectures usually look something like the flux architecture (although there are variations, such as [Purescript's Halogen](https://purescript-halogen.github.io/purescript-halogen/index.html)). They are characterised by keeping state in as few places outside of components, in as few places as possible. Mutations of this state are tightly controlled. Components are ideally pure functions, which requires extracting side effects to another place in the code. Using this style of architecture makes it easy to write, debug, and test your application. Since pure functions are used as much as possible, your code becomes highly composable with loose coupling.
 
-## The main problem with hooks
+### React - functional or OO?
 
-This brings me to the main reason I'm against hooks. When you rely entirely on hooks you inevitably end up with an OO architecture, but without any of the tools or conveniences this requires. Hooks push you towards storing mutable state in components. This state often needs to be synchronised with other components, but the only tool React provides you is callbacks. As in OO architectures, components can freely make side effects. In tests you need dependency injection to mock these side effects, but React doesn't provide it. You also need a way of setting a component's internal state, but again React won't help you here.
+So that brings us to a question - do hooks encourage a functional or an OO architecture? I think the best way to answer this is with a comparison. Let's compare modern React to the most OO of frameworks. A framework that did OO before it was uncool. A framework that has been described as "a very high quality implementation of the exact wrong way to do UIs". Yes that's right - AngularJS.
 
-This is a far cry from what React was originally intended for. React was never intended to be used as a framework. It was designed as the view layer of a functional architecture - [the "V" in MVC](https://web.archive.org/web/20140321012426/http://facebook.github.io/react). Facebook used (and still uses, as far as I know) React as the view layer of their flux architecture. Lee Byron, a developer on the React team, explained this at length in a 2013 [Quora post](https://www.quora.com/How-is-Facebooks-React-JavaScript-library-How-does-it-compare-with-other-popular-JavaScript-libraries/answer/Lee-Byron). One of the React team's earliest blog posts, published in June 2013, states:
+_React_
+
+    function Counter() {
+      const [counter, setCounter] = useState(0);
+    
+      useEffect(() => {
+        console.log(counter);
+      }, [counter]);
+    
+      return (<div>
+        <span>Count is: {counter}</span>
+        <button onClick={() => setCounter(counter + 1)}>Clicky</button>
+      </div>);
+    }
+
+_AngularJS_
+
+    // Template
+    <body ng-app="app" ng-controller="CounterController">
+      <span>Count is: {{counter}}</span>
+      <button ng-click="counter = counter + 1">Clicky</button>
+    </body>
+    
+    // Controller
+    angular.controller("CounterController", function($scope){
+      $scope.counter = 0;
+      $scope.watch('counter', (val) => console.log(val));
+    });
+
+It's readily apparent how similar the 2 snippets are. Aside from the template being separate in AngularJS, the snippets are almost the same line-for-line. In each, the component holds state (`counter`), which is mutated when the button is clicked. This `counter` state is bound to the rendered HTML. The component reacts when its state is updated, and performs a side effect.
+
+As well as the similarity, it's interesting to note that the AngularJS code is shorter and more straightforward. The `ng-click` handler has a more natural and JS-like syntax than the `onClick` handler in React. It's also easier to test, because it's easier to mock the injected `$scope` than the global `useState`. 
+
+Going beyond this toy example, AngularJS provided many tools and conveniences that React does not. AngularJS gave you dependency injection, which is completely missing from React (providers/context is a very poor imitation of DI). AngularJS also gave you 2-way binding (including with child components), a way of managing services and factories, and even an event bus in the form of `$emit`. These all helped you constrain the complexity inherent in using local state and side effects. It's also interesting to note that using multiple chained `$scope.$watch`s was always deemed an antipattern - a pattern which modern React encourages.
+
+To be clear, I'm not advocating that Google resurrect AngularJS. I'm just pointing out how much "modern" React resembles it. However, it seems to be missing several critical features that AngularJS provided. Why are these features missing? How have we gone backwards in the 10+ years since AngularJS was first released? 
+
+## The Big Problem
+
+This brings me to the main reason I'm against hooks. When you rely entirely on hooks you inevitably end up with an OO architecture, but React doesn't give you any of the tools or conveniences this approach requires. Hooks push you towards storing mutable state in components, which often needs to be synchronised with other components. However, the only tool React provides you for this is callbacks. Components can freely make side effects using `useEffect`. However this makes testing nigh-on impossible, because React doesn't give you dependency injection or a way of setting a component's internal state. Hooks allow you to chain state updates and effects to your heart's content, but React doesn't provide a way to test this logic independently.
+
+I believe this is because React was simply never intended to be a framework, but is now being treated as one. React was originally supposed to just be used for the view layer - [the "V" in MVC](https://web.archive.org/web/20140321012426/http://facebook.github.io/react). It was initially introduced as an alternative to increasingly large, complex, and cumbersome frameworks. Lee Byron, a developer on the React team, explained this design decision at length in a 2013 [Quora post](https://www.quora.com/How-is-Facebooks-React-JavaScript-library-How-does-it-compare-with-other-popular-JavaScript-libraries/answer/Lee-Byron). One of the React team's earliest blog posts, published in June 2013, states:
 
 > React is a library for building composable user interfaces. It encourages the creation of reusable UI components which present data that changes over time.
 
-React was initially introduced as an alternative to increasingly overbearing UI frameworks like AngularJS. These frameworks had become large, complex, and cumbersome. Unfortunately, now it seems that the prevailing belief is that React should be used as a framework. I don't think anything could be further from the truth.
-
-### Comparison with AngularJS
-
-To demonstrate my point, let's compare some modern React code to good old AngularJS:
-
-```js
-function Counter() {
-  const [counter, setCounter] = useState(0);
-
-  useEffect(() => {
-    console.log(counter);
-  }, [counter]);
-
-  return (<div>
-    <span>Count is: {counter}</span>
-    <button onClick={() => setCounter(counter + 1)}>Clicky</button>
-  </div>);
-}
-```
-
-```js
-// Template
-<body ng-app="app" ng-controller="CounterController">
-  <span>Count is: {{counter}}</span>
-  <button ng-click="counter = counter + 1">Clicky</button>
-</body>
-
-// Controller
-angular.controller("CounterController", function($scope){
-  $scope.counter = 0;
-  $scope.watch('counter', (val) => console.log(val));
-});
-```
-
-The overall approach of each snippet is similar. The component holds state (`counter`), which is mutated when the button is clicked. This `counter` state is bound to the rendered HTML. The component reacts when its state is updated, and makes a side effect.
-
-As well as the similarity, it's interesting to note that the AngularJS is shorter and more straightforward. Going beyond this toy example, AngularJS provided many tools and conveniences that React does not. AngularJS gave you dependency injection, 2-way binding (including with child components), services/factories, and even an event bus in the form of `$emit`. These all helped you constrain the complexity inherent in using local state and side effects. It's also interesting to note that using multiple chained `$scope.$watch`s was always deemed an antipattern. By contrast, hooks both encourage and require this pattern.
-
-To be clear, I'm not advocating that Google resurrect AngularJS. My point is that React has come full circle. It now very much resembles the frameworks it sought to make redundant, except without the conveniences they afforded.
+This is what React was intended for, and where it really shines. It should be used as one part, the view layer, of a larger application. Using it as a framework is doomed to failure. Hooks change none of that.
 
 ## A Better Way
 
 I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The key is to reduce your reliance on hooks. One option is to use a framework. There are many to choose from, and it's not too difficult to add them to an existing codebase. You can't go far wrong with Redux and Redux Toolkit. If you prefer the OOP approach, there are many great MVC/MVVM frameworks out there. If you'd like to try a different language, take a look at Elm or ClojureScript with Re-frame.
 
-Before I close, I'd just like to point out that it hasn't been my intention to disparage the React devs. As I mentioned above, I think hooks are a good innovation in many ways, and a definite improvement on the class API. I hope I've made it clear that what I'm against is the _overuse_ of hooks, and the belief that they will solve all your problems. Thanks for reading!
+Before I close, I'd just like to point out that it hasn't been my intention to disparage the React devs. As I mentioned above, I think hooks are a good innovation in many ways, and in most cases an improvement on the class API. I hope I've made it clear that what I'm against is the _overuse_ of hooks, and the belief that they will solve all your problems. Thanks for reading!
