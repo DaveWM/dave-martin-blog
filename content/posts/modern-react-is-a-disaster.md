@@ -87,8 +87,8 @@ function useDoSomething(message) {
 }
 
 function App() {
-  useDoSomething("foo");
-  useDoSomething("bar");
+  useDoSomething("foo"); // foo
+  useDoSomething("bar"); // bar
 
   return <div>App</div>;
 }
