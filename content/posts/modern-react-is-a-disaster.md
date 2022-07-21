@@ -49,7 +49,7 @@ This is fewer lines of code, and also clearer. You don't need any knowledge abou
 
 ### Difficulties with Hooks
 
-Unfortunately when you overuse hooks, things quickly go awry. Taking our example from above, let's add an input property and a simple side effect:
+Unfortunately, when you overuse hooks things quickly go awry. Taking our example from above, let's add an input property and a simple side effect:
 
 ```javascript 
 function Todo({done}){
