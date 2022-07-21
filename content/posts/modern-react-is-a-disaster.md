@@ -124,7 +124,7 @@ function App() {
 }
 ```
 
-This works, but it's counterintuitive to say the least. Similar code using promises or observables is far more understandable. The reason for this, fundamentally, is that composing hooks is difficult. The only tools you have for composition are state and the dependencies array. In some situations, they can be used to craft elegant solutions. However, in the vast majority of situations this way of writing code is unnatural and cumbersome.
+This works, but it's counterintuitive to say the least. Similar code using promises or observables is far more understandable. The fundamental reason for this is that composing hooks is difficult. The only tools you have for composition are `useState` and the dependencies array. In some situations, they can be used to craft elegant solutions. However, in the vast majority of situations this way of writing code is unnatural and cumbersome.
 
 The drawbacks I've outlined above are major hinderances, but ones that can in principle be surmounted. If using hooks naturally led to a good architecture, it may be worth putting up with these problems. Unfortunately, I don't believe this is the case. To explain why, I'll first have to explain a bit about state management.
 
@@ -138,7 +138,7 @@ Functional architectures usually look something like the flux architecture (alth
 
 ### React - functional or OO?
 
-So that brings us to a question - do hooks encourage a functional or an OO architecture? I think the best way to answer this is with a comparison. Let's compare modern React to the most OO of frameworks. A framework that did OO before it was uncool. A framework that has been described as "a very high quality implementation of the exact wrong way to do UIs". Yes that's right - AngularJS.
+So that brings us to a question - do hooks encourage a functional or an OO architecture? I think the best way to answer this is with a comparison. Let's compare modern React to the most OO of frameworks. A framework that did OO back when it was cool (well, slightly less uncool). Yes that's right - AngularJS.
 
 _React_
 
@@ -169,7 +169,7 @@ _AngularJS_
       $scope.watch('counter', (val) => console.log(val));
     });
 
-It's readily apparent how similar the 2 snippets are. Aside from the template being separate in AngularJS, the snippets are almost the same line-for-line. In each, the component holds state (`counter`), which is mutated when the button is clicked. This `counter` state is bound to the rendered HTML. The component reacts when its state is updated, and performs a side effect.
+It's readily apparent how similar the 2 snippets are. Aside from the template being separate in AngularJS, the snippets are almost the same line-for-line. In each, the component holds state (`counter`), which is mutated when the button is clicked. This `counter` state is bound to the rendered HTML. The component reacts when its state is updated, and logs out the current count.
 
 As well as the similarity, it's interesting to note that the AngularJS code is shorter and more straightforward. The `ng-click` handler has a more natural and JS-like syntax than the `onClick` handler in React. It's also easier to test, because it's easier to mock the injected `$scope` than the global `useState`.
 
