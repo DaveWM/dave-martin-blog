@@ -73,7 +73,7 @@ Unfortunately, that's far from the only drawback of hooks. Testing is always tri
 
 Another major hurdle is the infamous "Rules of Hooks". These approximate to "the number and order of hooks for a given component has to remain constant". In practice, this means that you can't conditionally use a hook. You have to put the conditional in a function, that is passed to the hook. This isn't natural, and can make your code difficult to understand. If you need a variable number of hooks, you have to wrap each one in a child component. This can lead to a proliferation of mostly useless child components, and can disrupt your carefully designed component hierarchy. The root cause of these restrictions is that React tracks hooks by the order in which they are called. I understand the reasoning behind this design choice, but it leads to a lot of problems nonetheless.
 
-While it's true that hooks are more composable than classes, they are less so than functions. Consider the following component, that makes 2 effects - `foo` and `bar`:
+While it's true that hooks are more composable than classes, they are less so than regular functions. Consider the following component, that makes 2 effects - `foo` and `bar`:
 
 ```js
 function useDoSomething(message) {
