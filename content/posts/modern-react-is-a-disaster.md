@@ -136,7 +136,7 @@ OO architectures include MVC/MVVM frameworks like Backbone, Ember, and Angular. 
 
 Functional architectures usually look something like the flux architecture (although there are variations, such as [Purescript's Halogen](https://purescript-halogen.github.io/purescript-halogen/index.html)). They are characterised by keeping state in as few places outside of components, in as few places as possible. Mutations of this state are tightly controlled. Components are ideally pure functions, which requires extracting side effects to another place in the code. Using this style of architecture makes it easy to write, debug, and test your application. Since pure functions are used as much as possible, your code becomes highly composable with loose coupling.
 
-### React - functional or OO?
+### Not-so-modern React
 
 So that brings us to a question - do hooks encourage a functional or an OO architecture? I think the best way to answer this is with a comparison. Let's compare modern React to the most OO of frameworks. A framework that did OO back when it was cool (well, slightly less uncool). Yes that's right - AngularJS.
 
