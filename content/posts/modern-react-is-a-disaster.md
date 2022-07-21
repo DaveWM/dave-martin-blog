@@ -5,9 +5,7 @@ draft = true
 title = "Critique of Pure Hooks"
 
 +++
-As you may have guessed from the title, I'm not a big fan of React's hooks API. I'm not _absolutely_ against hooks, and I do think they can be used effectively as part of a larger framework. However it's my strongly held opinion that in and of themselves, hooks are not sufficient to build complex web apps.
-
-I've now worked on 3 React applications which heavily used hooks. Each time the code quickly became bloated, difficult to understand, and full of bugs. I'm very much against the, seemingly ubiquitous, belief that hooks obviate any need to architect your application. Nothing could be further from the truth. In this post, I hope to convince you of that.
+As you may have guessed from the title, I'm not the biggest fan of React's hooks API. My issue actually isn't so much with the implementation, but how they're used. I think that hooks are an improvement over the old class API. What I'm against is the, seemingly ubiquitous, belief that hooks obviate any need to carefully structure your application. Hooks are treated as a magical elixir, that somehow solves all the problems that developers have been wrestling with for decades. I've now encountered this belief several times, at several different companies, and it inspired me to write this post. 
 
 ### Why Hooks?
 
@@ -173,11 +171,11 @@ _AngularJS_
 
 It's readily apparent how similar the 2 snippets are. Aside from the template being separate in AngularJS, the snippets are almost the same line-for-line. In each, the component holds state (`counter`), which is mutated when the button is clicked. This `counter` state is bound to the rendered HTML. The component reacts when its state is updated, and performs a side effect.
 
-As well as the similarity, it's interesting to note that the AngularJS code is shorter and more straightforward. The `ng-click` handler has a more natural and JS-like syntax than the `onClick` handler in React. It's also easier to test, because it's easier to mock the injected `$scope` than the global `useState`. 
+As well as the similarity, it's interesting to note that the AngularJS code is shorter and more straightforward. The `ng-click` handler has a more natural and JS-like syntax than the `onClick` handler in React. It's also easier to test, because it's easier to mock the injected `$scope` than the global `useState`.
 
 Going beyond this toy example, AngularJS provided many tools and conveniences that React does not. AngularJS gave you dependency injection, which is completely missing from React (providers/context is a very poor imitation of DI). AngularJS also gave you 2-way binding (including with child components), a way of managing services and factories, and even an event bus in the form of `$emit`. These all helped you constrain the complexity inherent in using local state and side effects. It's also interesting to note that using multiple chained `$scope.$watch`s was always deemed an antipattern - a pattern which modern React encourages.
 
-To be clear, I'm not advocating that Google resurrect AngularJS. I'm just pointing out how much "modern" React resembles it. However, it seems to be missing several critical features that AngularJS provided. Why are these features missing? How have we gone backwards in the 10+ years since AngularJS was first released? 
+To be clear, I'm not advocating that Google resurrect AngularJS. I'm just pointing out how much "modern" React resembles it. However, it seems to be missing several critical features that AngularJS provided. Why are these features missing? How have we gone backwards in the 10+ years since AngularJS was first released?
 
 ## The Big Problem
 
