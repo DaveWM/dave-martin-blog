@@ -1,5 +1,5 @@
 +++
-date = 2022-07-14T23:00:00Z
+date = 2022-07-24T23:00:00Z
 description = "A critique of modern React, specifically the hooks API, and an explanation of why it's insufficient as a web development framework"
 draft = true
 title = "Critique of Pure Hooks"
@@ -132,7 +132,7 @@ The drawbacks I've outlined above are major hinderances, but ones that can in pr
 
 Managing state is one of the central problems in programming. Every application must do it in some way. Over the years, every approach imaginable to UI state management has been tried. Two broad categories of architectures emerged: object oriented (OO), and functional.
 
-OO architectures include MVC/MVVM frameworks like Backbone, Ember, and Angular. It is characterised by storing state locally in components, and allowing it to be freely mutated. OO frameworks provide tools to manage this local state, and synchronise it between components. These include dependency injection, 2-way binding, services/factories, and event buses. Although I do think OOP has its flaws, when done well it does allow you to write relatively clear, testable code.
+OO architectures include MVC/MVVM frameworks like Vue and Angular. It is characterised by storing state locally in components, and allowing it to be freely mutated. OO frameworks provide tools to manage this local state, and synchronise it between components. These include dependency injection, 2-way binding, services/factories, and event buses. Although I do think OOP has its flaws, when done well it does allow you to write relatively clear, testable code.
 
 Functional architectures usually look something like the [Flux architecture](https://reactjs.org/blog/2014/05/06/flux.html) (although there are variations, such as [Purescript's Halogen](https://purescript-halogen.github.io/purescript-halogen/index.html)). They are characterised by keeping state in as few places outside of components, in as few places as possible. Mutations of this state are tightly controlled. Components are ideally pure functions, which requires extracting side effects to another place in the code. Using this style of architecture makes it easy to write, debug, and test your application. Since pure functions are used as much as possible, your code becomes highly composable with loose coupling.
 
@@ -189,7 +189,7 @@ In other words, React just takes care of rendering data efficiently - nothing mo
 
 ## A Better Way
 
-I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The key is to reduce your reliance on hooks. In most cases, you One option is to use a framework. There are many to choose from, and it's not too difficult to add them to an existing codebase. You can't go far wrong with Redux and Redux Toolkit. If you prefer the OOP approach, there are many great MVC/MVVM frameworks out there. If you'd like to try a different language, take a look at Elm or ClojureScript with Re-frame.
+I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The key is to reduce your reliance on hooks. One option is to use a framework. There are many to choose from, and it's not too difficult to add them to an existing codebase. You can't go far wrong with Redux and Redux Toolkit. If you prefer the OOP approach, there are many great MVC/MVVM frameworks out there. If you'd like to try a different language, take a look at Elm or ClojureScript with Re-frame.
 
 ## Wrapping Up
 
