@@ -124,7 +124,7 @@ function App() {
 }
 ```
 
-This works, but it's counterintuitive to say the least. Similar code using promises or observables is far more understandable. The fundamental reason for this is that composing hooks is difficult. The only tools you have for composition are `useState` and the dependencies array. In some situations, they can be used to craft elegant solutions. However, in the vast majority of situations this way of writing code is unnatural and cumbersome.
+This works, but it's counterintuitive to say the least. Similar code using promises or observables is far more understandable. The fundamental reason for this is that composing hooks is difficult. The only tools you have for composition are `useState` and the dependencies array. In some situations, they can be used to craft elegant solutions. However, in the vast majority of situations this way of writing code is unnatural and clunky.
 
 The drawbacks I've outlined above are major hinderances, but ones that can in principle be surmounted. It would be worth putting up with these difficulties if hooks naturally lead to a great architecure, or gave you some other big advantage. However, I don't believe this is not the case. To explain why, I'll first have to explain a bit about state management.
 
