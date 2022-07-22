@@ -191,7 +191,7 @@ In other words, React just renders data to the page in an efficient way - nothin
 
 I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The most important thing is to realise that you have to think about how to architect your application.
 
-If you prefer a functional architecture, you can immediately take some steps towards it. Try to pull state up the component hierarchy as high as possible, and strictly control how it's mutated. React gives you the [useReducer](https://reactjs.org/docs/hooks-reference.html#usereducer) hook to help with this. Also, try to isolate side effects in as few components as possible - preferably the ones handling state. Eventually, you'll be able to separate out state and side effects entirely.
+If you prefer a functional architecture, you can immediately take some steps towards it. Try to pull state and side effects up the component hierarchy as high as possible. You can also need to strictly control how child components can update this state. The best way to do this is by having them dispatch events to the state-holding parent component, which determines how to update the state. React gives you the [useReducer](https://reactjs.org/docs/hooks-reference.html#usereducer) hook to help with this. Eventually, you'll be able to separate out state and side effects entirely from your React code.
 
 It may be easier to use a framework, in which case you can't go far wrong with [Redux](https://redux.js.org/) and [Redux Observable](https://redux-observable.js.org/). Redux is fairly easy to introduce gradually to an existing codebase. It will instantly reduce your reliance on hooks and local mutable state, and make your app more testable and maintainable.
 
