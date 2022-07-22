@@ -181,21 +181,27 @@ To be clear, I'm not advocating that Google resurrect AngularJS. I'm just pointi
 
 This brings me to the main reason I'm against hooks. When you rely entirely on hooks you inevitably end up with a half-baked OO architecture. Hooks push you towards this, but React doesn't give you any of the tools or conveniences this approach requires. Hooks encourage storing mutable state in components, which often needs to be synchronised with other components. However, the only tool React provides you for this is callbacks. Components can freely make side effects using `useEffect`. However this makes testing nigh-on impossible, because React doesn't give you dependency injection. Hooks allow you to chain state updates and effects to your heart's content, but React doesn't provide a way to make this manageable or test this logic independently.
 
-I believe the root cause is that React was simply never intended to be used as a full framework, but is now being treated as one. React was originally supposed to just be used for the view layer. It was [the "V" in MVC](https://web.archive.org/web/20140321012426/http://facebook.github.io/react). React initially introduced as an alternative to increasingly large, complex, and cumbersome frameworks. The common refrain was "React is a library, not a framework". Lee Byron, a developer on the React team, explained this at length in a 2013 [Quora post](https://www.quora.com/How-is-Facebooks-React-JavaScript-library-How-does-it-compare-with-other-popular-JavaScript-libraries/answer/Lee-Byron). One of the React team's earliest blog posts, published in June 2013, states:
+I believe the root cause is that React was simply never intended to be used as a full framework, but is now being treated as one. React was originally supposed to just be used for DOM rendering - [the "V" in MVC](https://web.archive.org/web/20140321012426/http://facebook.github.io/react). React was initially introduced as an alternative to increasingly large, complex, and cumbersome frameworks. The common refrain was ["React is a view library, not a framework"](https://web.archive.org/web/20140516230615/http://facebook.github.io:80/react/). Lee Byron, a developer on the React team, explained this at length in a 2013 [Quora post](https://www.quora.com/How-is-Facebooks-React-JavaScript-library-How-does-it-compare-with-other-popular-JavaScript-libraries/answer/Lee-Byron). One of the React team's [earliest blog posts](https://reactjs.org/blog/2013/06/05/why-react.html#react-isnt-an-mvc-framework), published in June 2013, states:
 
 > React is a library for building composable user interfaces. It encourages the creation of reusable UI components which present data that changes over time.
 
-In other words, React just takes care of rendering data efficiently - nothing more. This is what React was intended for, and where it really shines. It should be used as one part, the view layer, of a larger application. Hooks don't change this. Somewhere along the way, people seem to have forgotten all this, and decided that hooks mean React is now a framework. This is doomed to failure.
+In other words, React just takes care of rendering data efficiently - nothing more. This is what React was intended for, and where it really shines. It should be used as one part, the view layer, of a larger application. Hooks don't change this. However, it's a distressingly common belief that hooks have turned React into a framework. This is incorrect.
 
 ## A Better Way
 
-I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The key is to reduce your reliance on hooks. One option is to use a framework. There are many to choose from, and it's not too difficult to add them to an existing codebase. You can't go far wrong with Redux and Redux Toolkit. If you prefer the OOP approach, there are many great MVC/MVVM frameworks out there. If you'd like to try a different language, take a look at Elm or ClojureScript with Re-frame.
+I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The most important thing is to realise that you have to think about how to architect your application. The easiest way to do this is to use a framework. 
+
+If you prefer a functional architecture, you can't go far wrong with [Redux](https://redux.js.org/) and [Redux Observable](https://redux-observable.js.org/). Redux is fairly easy to introduce gradually to an existing codebase. It will instantly reduce your reliance on hooks and local mutable state, and make your app more maintainable.
+
+It's more difficult to update an existing app to use a more OOP approach. However, for greenfield projects there are many great MVC/MVVM frameworks to choose from. [Angular](https://angular.io/) and [Vue](https://vuejs.org/) are very popular choices.
+
+ If you'd like to try a different language, I'd recommend taking a look at either [Elm](https://elm-lang.org/) or ClojureScript's [re-frame](https://github.com/Day8/re-frame).
 
 ## Wrapping Up
 
 Before I close, I'd just like to point out that it hasn't been my intention to disparage the React devs. As I mentioned above, I think hooks are a good innovation in many ways, and in most cases an improvement on the class API. I hope I've made it clear that what I'm against is the _overuse_ of hooks, and the belief that they will solve all your problems.
 
-Thanks very much for reading. Although I imagine many people won't agree, I hope I've made some valuable points. If you have any feedback on this post, especially reasons I'm incorrect, I'd love to hear it. Please drop me an email at mail@davemartin.me. If I've piqued your interest, here are some extra resources you may find interesting:
+Thanks very much for reading. Although I imagine many people won't agree, I hope I've made some valuable points. If you have any feedback on this post, especially reasons I'm incorrect, I'd love to hear it. Please drop me an email at [mail@davemartin.me](mailto:mail@davemartin.me). If I've piqued your interest, here are some other resources you may find interesting:
 
 _Official Docs_
 
@@ -208,6 +214,7 @@ _Praise for Hooks_
 * [React Hooks and Why You Should Use Them](https://medium.com/geekculture/react-hooks-and-why-you-should-use-them-ab92ee033e43)
 * [Why React Hooks?](https://ui.dev/why-react-hooks)
 * [Why Hooks are the Best Thing to happen to React](https://stackoverflow.blog/2021/10/20/why-hooks-are-the-best-thing-to-happen-to-react/)
+* [Replace Redux with React Hooks](https://dev.to/carriepascale/replace-redux-with-react-hooks-o8c)
 
 _Criticisms of Hooks_
 
