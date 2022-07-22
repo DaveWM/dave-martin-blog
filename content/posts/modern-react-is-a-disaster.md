@@ -1,11 +1,11 @@
 +++
 date = 2022-07-14T23:00:00Z
-description = "A critique of React's hooks API, and an explanation of why it's insufficient as a web development framework"
+description = "A critique of modern React, specifically the hooks API, and an explanation of why it's insufficient as a web development framework"
 draft = true
 title = "Critique of Pure Hooks"
 
 +++
-As you may have guessed from the title, I'm not the biggest fan of React's hooks API. My issue actually isn't so much with the implementation, but how they've changed how React is used. I think that hooks are (mostly) an improvement over the old class API. What I'm against is the, seemingly ubiquitous, belief that hooks obviate any need to carefully structure your application. Hooks are treated as a magical elixir, that somehow solves all the problems that developers have been wrestling with for decades. I've now encountered this belief several times, at several different companies, and it inspired me to write this post. 
+As you may have guessed from the title, I'm not the biggest fan of React's hooks API. My issue actually isn't so much with the implementation, but how they've changed how React is used. I think that hooks are (mostly) an improvement over the old class API. What I'm against is the, seemingly ubiquitous, belief that hooks obviate any need to carefully structure your application. Hooks are treated as a magical elixir that somehow solves many fundamental problems that developers have been wrestling with for decades. It's now seen as quaint and old fashioned to worry about things like state management, side effects, and testability. Hooks solve it all! I've now encountered this belief several times, at several different companies, and it's what inspired me to write this post.
 
 ### Why Hooks?
 
