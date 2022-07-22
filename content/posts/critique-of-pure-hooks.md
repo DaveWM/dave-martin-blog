@@ -5,7 +5,7 @@ draft = true
 title = "Critique of Pure Hooks"
 
 +++
-It may surprise you, given the title of this post, that I'm not _absolutely_ against hooks. I actually think that they're mostly an improvement over the old class API. What concerns me is how they've effected how React is used in practice. React is now perceived as a full framework, rather than just a library for UI rendering. It's claimed that hooks have enabled this shift. I've been told that hooks solve fundamental problems like state management, controlling side effects, and writing testable code. I completely disagree with this. I've now encountered this belief several times, at several different companies, and it has inspired me to write this post as a rebuttal.
+It may surprise you, given the title of this post, that I'm not _absolutely_ against hooks. I actually think that they're mostly an improvement over the old class API. What concerns me is how they've affected how React is used in practice. React is now perceived as a full framework, rather than just a library for UI rendering. It's claimed that hooks have enabled this shift. I've been told that hooks solve fundamental problems like state management, controlling side effects, and writing testable code. I completely disagree with this. I've now encountered this belief several times, at several different companies, and it has inspired me to write this post as a rebuttal.
 
 ### Why Hooks?
 
