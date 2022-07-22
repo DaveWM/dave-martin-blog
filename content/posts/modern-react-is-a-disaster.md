@@ -5,7 +5,7 @@ draft = true
 title = "Critique of Pure Hooks"
 
 +++
-It may surprise you, given the title of this post, that I'm not *absolutely* against hooks. I actually think that they're mostly an improvement over the old class API. What concerns me is how they've effected how React is used in practice. React is now perceived as a full framework, rather than just a library for UI rendering. It's claimed that hooks have enabled this shift. I've been told that hooks solve fundamental problems like state management, controlling side effects, and writing testable code. I completely disagree with this. I've now encountered this belief several times, at several different companies, and it has inspired me to write this post as a rebuttal.
+It may surprise you, given the title of this post, that I'm not _absolutely_ against hooks. I actually think that they're mostly an improvement over the old class API. What concerns me is how they've effected how React is used in practice. React is now perceived as a full framework, rather than just a library for UI rendering. It's claimed that hooks have enabled this shift. I've been told that hooks solve fundamental problems like state management, controlling side effects, and writing testable code. I completely disagree with this. I've now encountered this belief several times, at several different companies, and it has inspired me to write this post as a rebuttal.
 
 ### Why Hooks?
 
@@ -71,7 +71,7 @@ At first glance this looks great. However, on closer inspection we've introduced
 
 Unfortunately, that's far from the only drawback of hooks. Testing is always tricky when you have local state in components, but hooks add to this difficulty. With the class API, it was often possible to set a component's state then assert that the output of `render` is correct. In general, with hooks this isn't possible. This is because you can use multiple `useState` hooks within a single component. You are forced to cajole the component into the right state, often by simulating a sequence of UI actions. This is time consuming, tedious, error prone, and leads to bloated tests. Also, you are often forced to add delays, which drastically slow down your tests.
 
-Another major hurdle is the infamous "Rules of Hooks". These approximate to "the number and order of hooks for a given component has to remain constant". In practice, this means that you can't conditionally use a hook. You have to put the conditional in a function, that is passed to the hook. This isn't natural, and can make your code difficult to understand. If you need a variable number of hooks, you have to wrap each one in a child component. This can lead to a proliferation of mostly useless child components, and can disrupt your carefully designed component hierarchy. The root cause of these restrictions is that React tracks hooks by the order in which they are called. I understand the reasoning behind this design choice, but it leads to a lot of problems nonetheless.
+Another major hurdle is the infamous ["Rules of Hooks"](https://reactjs.org/docs/hooks-rules.html). These approximate to "the number and order of hooks for a given component has to remain constant". In practice, this means that you can't conditionally use a hook. You have to put the conditional in a function, that is passed to the hook. This isn't natural, and can make your code difficult to understand. If you need a variable number of hooks, you have to wrap each one in a child component. This can lead to a proliferation of mostly useless child components, and can disrupt your carefully designed component hierarchy. The root cause of these restrictions is that React tracks hooks by the order in which they are called. I understand the [reasoning behind this design choice](https://overreacted.io/why-do-hooks-rely-on-call-order/), but it leads to a lot of problems nonetheless.
 
 While it's true that hooks are more composable than classes, they are less so than regular functions. Consider the following component, that makes 2 effects - `foo` and `bar`:
 
@@ -134,7 +134,7 @@ Managing state is one of the central problems in programming. Every application 
 
 OO architectures include MVC/MVVM frameworks like Backbone, Ember, and Angular. It is characterised by storing state locally in components, and allowing it to be freely mutated. OO frameworks provide tools to manage this local state, and synchronise it between components. These include dependency injection, 2-way binding, services/factories, and event buses. Although I do think OOP has its flaws, when done well it does allow you to write relatively clear, testable code.
 
-Functional architectures usually look something like the flux architecture (although there are variations, such as [Purescript's Halogen](https://purescript-halogen.github.io/purescript-halogen/index.html)). They are characterised by keeping state in as few places outside of components, in as few places as possible. Mutations of this state are tightly controlled. Components are ideally pure functions, which requires extracting side effects to another place in the code. Using this style of architecture makes it easy to write, debug, and test your application. Since pure functions are used as much as possible, your code becomes highly composable with loose coupling.
+Functional architectures usually look something like the [Flux architecture](https://reactjs.org/blog/2014/05/06/flux.html) (although there are variations, such as [Purescript's Halogen](https://purescript-halogen.github.io/purescript-halogen/index.html)). They are characterised by keeping state in as few places outside of components, in as few places as possible. Mutations of this state are tightly controlled. Components are ideally pure functions, which requires extracting side effects to another place in the code. Using this style of architecture makes it easy to write, debug, and test your application. Since pure functions are used as much as possible, your code becomes highly composable with loose coupling.
 
 ### Not-so-modern React
 
@@ -193,6 +193,28 @@ I've been painting a pretty bleak picture so far. However, the good news is ther
 
 ## Wrapping Up
 
-Before I close, I'd just like to point out that it hasn't been my intention to disparage the React devs. As I mentioned above, I think hooks are a good innovation in many ways, and in most cases an improvement on the class API. I hope I've made it clear that what I'm against is the _overuse_ of hooks, and the belief that they will solve all your problems. 
+Before I close, I'd just like to point out that it hasn't been my intention to disparage the React devs. As I mentioned above, I think hooks are a good innovation in many ways, and in most cases an improvement on the class API. I hope I've made it clear that what I'm against is the _overuse_ of hooks, and the belief that they will solve all your problems.
 
-Thanks very much for reading. Although I imagine many people won't agree, I hope I've made some valuable points. If you have any feedback on this post, especially reasons I'm incorrect, I'd love to hear it. Please drop me an email at mail@davemartin.me. If I've piqued your interest, here are some extra resources:
+Thanks very much for reading. Although I imagine many people won't agree, I hope I've made some valuable points. If you have any feedback on this post, especially reasons I'm incorrect, I'd love to hear it. Please drop me an email at mail@davemartin.me. If I've piqued your interest, here are some extra resources you may find interesting:
+
+_Official Docs_
+
+* [Introducing Hooks](https://reactjs.org/docs/hooks-intro.html)
+* [Hooks API Reference](https://reactjs.org/docs/hooks-reference.html)
+* [Flux: An Application Architecture for React](https://reactjs.org/blog/2014/05/06/flux.html)
+
+_Praise for Hooks_
+
+* [React Hooks and Why You Should Use Them](https://medium.com/geekculture/react-hooks-and-why-you-should-use-them-ab92ee033e43)
+* [Why React Hooks?](https://ui.dev/why-react-hooks)
+* [Why Hooks are the Best Thing to happen to React](https://stackoverflow.blog/2021/10/20/why-hooks-are-the-best-thing-to-happen-to-react/)
+
+_Criticisms of Hooks_
+
+* [The Ugly Side of Hooks](https://medium.com/swlh/the-ugly-side-of-hooks-584f0f8136b6)
+* [Why the Hate for React Hooks](https://www.reddit.com/r/reactjs/comments/9suobg/why_the_hate_for_react_hooks/)
+* [Why Hooks are Bad](https://leocode.com/development/why-hooks-are-bad/)
+* [React Hooks and its Advantages](https://www.boardinfinity.com/blog/react-hooks-and-its-advantages/)
+* [A Critique of React Hooks](https://dillonshook.com/a-critique-of-react-hooks/)
+* [Can we all just admit React Hooks were a Bad Idea](https://medium.com/codex/can-we-all-just-admit-react-hooks-were-a-bad-idea-c48120c5188d)
+* [Hooks Considered Harmful](https://labs.factorialhr.com/posts/hooks-considered-harmful)
