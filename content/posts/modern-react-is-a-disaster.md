@@ -5,7 +5,7 @@ draft = true
 title = "Critique of Pure Hooks"
 
 +++
-It may surprise you, given the title of this post, that I'm actually not absolutely against hooks. I think that they're (mostly) an improvement over the old class API. What really concerns me is the common belief that you can write an application by relying solely on hooks. I'm very much against the, seemingly ubiquitous, belief that hooks mean you no longer have to properly architect your applications. I've been told that we now don't need to worry about fundamental problems like state management, side effects, and testability. I've encountered this belief several times, at several different companies, and it's what inspired me to write this post.
+It may surprise you, given the title of this post, that I'm not *absolutely* against hooks. I actually think that they're mostly an improvement over the old class API. What concerns me is how they've effected how React is used in practice. React is now perceived as a full framework, rather than just a library for UI rendering. It's claimed that hooks have enabled this shift. I've been told that hooks solve fundamental problems like state management, controlling side effects, and writing testable code. I completely disagree with this. I've now encountered this belief several times, at several different companies, and it has inspired me to write this post as a rebuttal.
 
 ### Why Hooks?
 
@@ -126,7 +126,7 @@ function App() {
 
 This works, but it's counterintuitive to say the least. Similar code using promises or observables is far more understandable. The fundamental reason for this is that composing hooks is difficult. The only tools you have for composition are `useState` and the dependencies array. In some situations, they can be used to craft elegant solutions. However, in the vast majority of situations this way of writing code is unnatural and cumbersome.
 
-The drawbacks I've outlined above are major hinderances, but ones that can in principle be surmounted. If using hooks naturally led to a good architecture, it may be worth putting up with these problems. Unfortunately, I don't believe this is the case. To explain why, I'll first have to explain a bit about state management.
+The drawbacks I've outlined above are major hinderances, but ones that can in principle be surmounted. It would be worth putting up with these difficulties if hooks naturally lead to a great architecure, or gave you some other big advantage. However, I don't believe this is not the case. To explain why, I'll first have to explain a bit about state management.
 
 ### State Management
 
@@ -138,7 +138,7 @@ Functional architectures usually look something like the flux architecture (alth
 
 ### Not-so-modern React
 
-So that brings us to a question - do hooks encourage a functional or an OO architecture? I think the best way to answer this is with a comparison. Let's compare modern React to the most OO of frameworks. A framework that did OO back when it was cool (well, slightly less uncool). Yes that's right - AngularJS.
+So that brings us to a question - where does the "hooks architecture" land in this spectrum? I think the best way to answer this is with a comparison. For a basic `Counter` component, let's compare modern React to another framework. The grandfather of JS frameworks. A framework that did OO back when it was cool (well, slightly less uncool). Yes that's right - AngularJS.
 
 _React_
 
@@ -169,7 +169,7 @@ _AngularJS_
       <button ng-click="counter = counter + 1">Clicky</button>
     </div>
 
-It's readily apparent how similar the 2 snippets are. Aside from the template being separate in AngularJS, the snippets are almost the same line-for-line. In each, the component holds state (`counter`), which is mutated when the button is clicked. This `counter` state is bound to the rendered HTML. The component reacts when its state is updated, and logs out the current count. This similarity would seem to suggest that React is now more towards the OO end of the state management spectrum.
+It's readily apparent how similar the 2 snippets are. Aside from the template being separate in AngularJS, the snippets are almost the same line-for-line. In each, the component holds state (`counter`), which is mutated when the button is clicked. This `counter` state is bound to the rendered HTML. The component reacts when its state is updated, and logs out the current count. This similarity would seem to suggest that modern React is more towards the OO end of the state management spectrum.
 
 As well as the similarity, it's interesting to note that the AngularJS code is shorter and more straightforward. The `ng-click` handler has a more natural and JS-like syntax than the `onClick` handler in React. It's also easier to test, because you can mock the injected `$scope` than the global `useState`.
 
@@ -189,7 +189,7 @@ In other words, React just takes care of rendering data efficiently - nothing mo
 
 ## A Better Way
 
-I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The key is to reduce your reliance on hooks. One option is to use a framework. There are many to choose from, and it's not too difficult to add them to an existing codebase. You can't go far wrong with Redux and Redux Toolkit. If you prefer the OOP approach, there are many great MVC/MVVM frameworks out there. If you'd like to try a different language, take a look at Elm or ClojureScript with Re-frame.
+I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The key is to reduce your reliance on hooks. In most cases, you One option is to use a framework. There are many to choose from, and it's not too difficult to add them to an existing codebase. You can't go far wrong with Redux and Redux Toolkit. If you prefer the OOP approach, there are many great MVC/MVVM frameworks out there. If you'd like to try a different language, take a look at Elm or ClojureScript with Re-frame.
 
 ## Wrapping Up
 
