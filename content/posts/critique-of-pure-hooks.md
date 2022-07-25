@@ -214,6 +214,8 @@ _Official Docs_
 _Praise for Hooks_
 
 * [Thinking in React Hooks](https://wattenberger.com/blog/react-hooks)
+* [Making Sense of React Hooks](https://dev.to/dan_abramov/making-sense-of-react-hooks-2eib)
+* [React Hooks and its Advantages](https://www.boardinfinity.com/blog/react-hooks-and-its-advantages/)
 * [React Hooks and Why You Should Use Them](https://medium.com/geekculture/react-hooks-and-why-you-should-use-them-ab92ee033e43)
 * [Why React Hooks?](https://ui.dev/why-react-hooks)
 * [Why Hooks are the Best Thing to happen to React](https://stackoverflow.blog/2021/10/20/why-hooks-are-the-best-thing-to-happen-to-react/)
@@ -224,7 +226,6 @@ _Criticisms of Hooks_
 * [The Ugly Side of Hooks](https://medium.com/swlh/the-ugly-side-of-hooks-584f0f8136b6)
 * [Why the Hate for React Hooks](https://www.reddit.com/r/reactjs/comments/9suobg/why_the_hate_for_react_hooks/)
 * [Why Hooks are Bad](https://leocode.com/development/why-hooks-are-bad/)
-* [React Hooks and its Advantages](https://www.boardinfinity.com/blog/react-hooks-and-its-advantages/)
 * [A Critique of React Hooks](https://dillonshook.com/a-critique-of-react-hooks/)
-* [Can we all just admit React Hooks were a Bad Idea](https://medium.com/codex/can-we-all-just-admit-react-hooks-were-a-bad-idea-c48120c5188d)
+* [Can we all just admit React Hooks were a Bad Idea?](https://medium.com/codex/can-we-all-just-admit-react-hooks-were-a-bad-idea-c48120c5188d)
 * [Hooks Considered Harmful](https://labs.factorialhr.com/posts/hooks-considered-harmful)
