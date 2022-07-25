@@ -213,6 +213,7 @@ _Official Docs_
 
 _Praise for Hooks_
 
+* [Thinking in React Hooks](https://wattenberger.com/blog/react-hooks)
 * [React Hooks and Why You Should Use Them](https://medium.com/geekculture/react-hooks-and-why-you-should-use-them-ab92ee033e43)
 * [Why React Hooks?](https://ui.dev/why-react-hooks)
 * [Why Hooks are the Best Thing to happen to React](https://stackoverflow.blog/2021/10/20/why-hooks-are-the-best-thing-to-happen-to-react/)
