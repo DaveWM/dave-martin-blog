@@ -226,7 +226,7 @@ _Praise for Hooks_
 _Criticisms of Hooks_
 
 * [The Ugly Side of Hooks](https://medium.com/swlh/the-ugly-side-of-hooks-584f0f8136b6)
-* [Why the Hate for React Hooks](https://www.reddit.com/r/reactjs/comments/9suobg/why_the_hate_for_react_hooks/)
+* [Why the Hate for React Hooks](https://www.reddit.com/r/reactjs/comments/9suobg/why_the_hate_for_react_hooks/) (Reddit post)
 * [Why Hooks are Bad](https://leocode.com/development/why-hooks-are-bad/)
 * [A Critique of React Hooks](https://dillonshook.com/a-critique-of-react-hooks/)
 * [Can we all just admit React Hooks were a Bad Idea?](https://medium.com/codex/can-we-all-just-admit-react-hooks-were-a-bad-idea-c48120c5188d)
