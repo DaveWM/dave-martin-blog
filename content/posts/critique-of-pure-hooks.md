@@ -1,7 +1,6 @@
 +++
 date = 2022-07-25T23:00:00Z
 description = "A critique of modern React, specifically the hooks API, and an explanation of why it's insufficient as a web development framework"
-draft = true
 title = "Critique of Pure Hooks"
 
 +++
