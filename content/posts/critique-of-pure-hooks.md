@@ -179,31 +179,33 @@ To be clear I'm not advocating that Google resurrect AngularJS, or that it's bet
 
 ## The Big Problem
 
-This brings me to the main reason I'm against hooks. When you rely entirely on hooks you inevitably end up with a half-baked OO architecture. Hooks push you towards this, but React doesn't give you any of the tools or conveniences this approach requires. Hooks encourage storing mutable state in components, which often needs to be synchronised with other components. However, the only tool React provides you for this is callbacks. Components can freely make side effects using `useEffect`. However this makes testing nigh-on impossible, because React doesn't give you dependency injection. Hooks allow you to chain state updates and effects to your heart's content, but React doesn't provide a way to make this manageable or test this logic independently.
+This brings me to the main reason I'm against hooks. When you rely entirely on hooks you inevitably end up with a half-baked OO architecture. Hooks push you towards this, but React doesn't give you any of the tools or conveniences this approach requires. 
 
-I believe the root cause is that React was simply never intended to be used as a full framework, but is now being treated as one. React was originally supposed to just be used for DOM rendering - [the "V" in MVC](https://web.archive.org/web/20140321012426/http://facebook.github.io/react). React was initially introduced as an alternative to increasingly large, complex, and cumbersome frameworks. The common refrain was ["React is a view library, not a framework"](https://web.archive.org/web/20140516230615/http://facebook.github.io:80/react/). Lee Byron, a developer on the React team, explained this at length in a 2013 [Quora post](https://www.quora.com/How-is-Facebooks-React-JavaScript-library-How-does-it-compare-with-other-popular-JavaScript-libraries/answer/Lee-Byron). One of the React team's [earliest blog posts](https://reactjs.org/blog/2013/06/05/why-react.html#react-isnt-an-mvc-framework), published in June 2013, states:
+Hooks encourage storing mutable state in components, which often needs to be synchronised with other components. However, the only tool React provides you for this is callbacks. Components can freely make side effects using `useEffect`. However this makes testing nigh-on impossible, because React doesn't give you dependency injection. Hooks allow you to chain state updates and effects to your heart's content, but React doesn't provide a way to make this manageable or test this logic independently.
 
-> React is a library for building composable user interfaces. It encourages the creation of reusable UI components which present data that changes over time.
+How did React get in this state? I believe the root cause is that it was never intended to be used as a full framework, but is now being treated as one. React was originally supposed to solely be used for DOM rendering - [the "V" in MVC](https://web.archive.org/web/20140321012426/http://facebook.github.io/react). React was initially introduced as an alternative to increasingly large, complex, and cumbersome frameworks. The common refrain was ["React is a view library, not a framework"](https://web.archive.org/web/20140516230615/http://facebook.github.io:80/react/). Lee Byron, a developer on the React team, explained this at length in a 2013 [Quora post](https://www.quora.com/How-is-Facebooks-React-JavaScript-library-How-does-it-compare-with-other-popular-JavaScript-libraries/answer/Lee-Byron). One of the React team's [earliest blog posts](https://reactjs.org/blog/2013/06/05/why-react.html#react-isnt-an-mvc-framework), published in June 2013, states (emphasis mine):
 
-In other words, React just renders data to the page in an efficient way - nothing more. This is what React was intended for, and where it really shines. It should be used as one part, the view layer, of a larger application. Local state should only be used as a last resort, for behaviour that Hooks don't change any of this. However, it's a distressingly common belief that hooks have turned React into a framework. This is incorrect.
+> React is a library for building composable user interfaces. It encourages the creation of reusable UI components which **present data** that changes over time.
+
+In other words, React _just_ renders data to the page in an efficient way - nothing more. This is what React was intended for, and where it really shines. It should be used as one part, the view layer, of a larger application. Component-local state should only be used as a last resort, for behaviour that doesn't need testing. Hooks don't change any of this. However, it's a distressingly common belief that hooks have turned React into a framework. This is simply incorrect.
 
 ## A Better Way
 
-I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The most important thing is to realise that you have to think about how to architect your application.
+I've been painting a pretty bleak picture so far. However, the good news is there are solutions. The most important thing is to think about how to architect your application.
 
 If you prefer a functional architecture, you can immediately take some steps towards it. Try to pull state and side effects up the component hierarchy as high as possible. You can also need to strictly control how child components can update this state. The best way to do this is by having them dispatch events to the state-holding parent component, which determines how to update the state. React gives you the [useReducer](https://reactjs.org/docs/hooks-reference.html#usereducer) hook to help with this. Eventually, you'll be able to separate out state and side effects entirely from your React code.
 
 It may be easier to use a framework, in which case you can't go far wrong with [Redux](https://redux.js.org/) and [Redux Observable](https://redux-observable.js.org/). Redux is fairly easy to introduce gradually to an existing codebase. It will instantly reduce your reliance on hooks and local mutable state, and make your app more testable and maintainable.
 
-It's more difficult to update an existing app to use a more OOP approach. However, for greenfield projects there are many great MVC/MVVM frameworks to choose from. [Angular](https://angular.io/) and [Vue](https://vuejs.org/) are very popular choices.
+Unfortunately it's a bit more difficult to update an existing React app to use a more OOP approach. However, for greenfield projects there are many great MVC/MVVM frameworks to choose from. [Angular](https://angular.io/) and [Vue](https://vuejs.org/) are very popular choices.
 
-If you'd like to try a different language, I'd recommend taking a look at either [Elm](https://elm-lang.org/) or ClojureScript's [re-frame](https://github.com/Day8/re-frame).
+If you're feeling brave and would like to try out a different language, I'd recommend taking a look at either [Elm](https://elm-lang.org/) or ClojureScript's [re-frame](https://github.com/Day8/re-frame).
 
 ## Wrapping Up
 
 Before I close, I'd just like to point out that it hasn't been my intention to disparage the React devs. As I mentioned above, I think hooks are a good innovation in many ways, and in most cases an improvement on the class API. I hope I've made it clear that what I'm against is the _overuse_ of hooks, and the belief that they will solve all your problems.
 
-Thanks very much for reading. Although I imagine many people won't agree, I hope I've made some valuable points. If you have any feedback on this post, especially reasons I'm incorrect, I'd love to hear it. Please drop me an email at [mail@davemartin.me](mailto:mail@davemartin.me). If I've piqued your interest, here are some other resources you may find interesting:
+Thanks very much for reading. Although I imagine many people won't agree, I hope I've made some valuable points. If you have any feedback on this post, especially reasons I'm incorrect, I'd love to hear it. Please drop me an email at [mail@davemartin.me](mailto:mail@davemartin.me). If I've piqued your interest, here are some other resources you may find useful:
 
 _Official Docs_
 
