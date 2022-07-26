@@ -5,11 +5,11 @@ draft = true
 title = "Critique of Pure Hooks"
 
 +++
-It may surprise you, given the title of this post, that I'm not _absolutely_ against hooks. I actually think that they're mostly an improvement over the old class API. What concerns me is how they've affected how React is used in practice. React is now perceived as a full framework, rather than just a library for UI rendering. It's claimed that hooks have enabled this shift. I've been told that hooks solve fundamental problems like state management, controlling side effects, and writing testable code. I completely disagree with this. I've now encountered this belief several times, at several different companies, and it has inspired me to write this post as a rebuttal.
+It may surprise you, given the title of this post, that I'm not _absolutely_ against hooks. I actually think that they're mostly an improvement over the old class API. What concerns me is how they've affected how React is used in practice. React is now perceived as a full framework, rather than just a library for UI rendering. It's claimed that hooks have enabled this shift. I've been told that hooks solve fundamental problems like state management, controlling side effects, and writing testable code. I'm dubious of these claims. I've now encountered this belief several times, at several different companies, and it has inspired me to write this post as a rebuttal.
 
 ### Why Hooks?
 
-Firstly, allow me to steelman the argument for hooks. Hooks were designed to be more functional, composable, and terser than React's class API. To some extent, it has been successful in this. Say you have a `Todo` component written using the class API:
+Firstly, allow me to steelman the argument for hooks. Hooks were designed to be more functional, composable, and terser than React's class API. I would say it has been successful in this regard. Say you have a `Todo` component written using the class API:
 
 ```javascript
 export default class Todo extends React.Component {
@@ -67,13 +67,13 @@ function Todo({done}){
 }
 ```
 
-At first glance this looks great. However, on closer inspection we've introduced a bug! We're reading the `done` property in the `useEffect` function, but we haven't added it to the dependencies array. This means the effect won't be run when `done` changes. This may seem trivial to fix, but it can be extremely difficult to track down bugs like this. In my experience the dependencies array is an endless source of bugs. Linters can help, [but don't eliminate](https://typeofweb.com/wady-react-hooks#eslint) these bugs. Another "gotcha" occurs if you use anything other than a primitive value as a dependency. This is never mentioned in the documentation. I have personally spent many hours tracking down these types of bugs, and this seems like a common experience among all React developers.
+At first glance this looks great. However, on closer inspection we've introduced a bug! We're reading the `done` property in the `useEffect` function, but we haven't added it to the dependencies array. This means the effect won't be run when `done` changes. This may seem trivial to fix, but it can be extremely difficult to track down bugs like this. In my experience the dependencies array is an endless source of bugs. Linters can help, [but don't eliminate](https://typeofweb.com/wady-react-hooks#eslint) these bugs. Another "gotcha" occurs if you use anything other than a primitive value as a dependency. I have personally spent many hours tracking down these types of bugs, and this seems like a common experience among all React developers.
 
 Unfortunately, that's far from the only drawback of hooks. Testing is always tricky when you have local state in components, but hooks add to this difficulty. With the class API, it was often possible to set a component's state then assert that the output of `render` is correct. In general, with hooks this isn't possible. This is because you can use multiple `useState` hooks within a single component. You are forced to cajole the component into the right state, often by simulating a sequence of UI actions. This is time consuming, tedious, error prone, and leads to bloated tests. Also, you are often forced to add delays, which drastically slow down your tests.
 
 Another major hurdle is the infamous ["Rules of Hooks"](https://reactjs.org/docs/hooks-rules.html). These approximate to "the number and order of hooks for a given component has to remain constant". In practice, this means that you can't conditionally use a hook. You have to put the conditional in a function, that is passed to the hook. This isn't natural, and can make your code difficult to understand. If you need a variable number of hooks, you have to wrap each one in a child component. This can lead to a proliferation of mostly useless child components, and can disrupt your carefully designed component hierarchy. The root cause of these restrictions is that React tracks hooks by the order in which they are called. I understand the [reasoning behind this design choice](https://overreacted.io/why-do-hooks-rely-on-call-order/), but it leads to a lot of problems nonetheless.
 
-While it's true that hooks are more composable than classes, they are less so than regular functions. Consider the following component, that makes 2 effects - `foo` and `bar`:
+While it's true that hooks are more composable than classes, they are less so than regular functions. Consider the following component, that performs 2 effects - `foo` and `bar`:
 
 ```js
 function useDoSomething(message) {
@@ -124,17 +124,17 @@ function App() {
 }
 ```
 
-This works, but it's counterintuitive to say the least. Similar code using promises or observables is far more understandable. The fundamental reason for this is that composing hooks is difficult. The only tools you have for composition are `useState` and the dependencies array. In some situations, they can be used to craft elegant solutions. However, in the vast majority of situations this way of writing code is unnatural and clunky.
+This works, but is counterintuitive to say the least. Similar code using promises or observables is far easier to write, and more understandable. The only tools you have for composing hooks are `useState` and the dependencies array. In some situations, these can be used to craft elegant solutions. However, often it forces you to write code in a style that is unnatural and verbose.
 
-The drawbacks I've outlined above are major hinderances, but ones that can in principle be surmounted. It would be worth putting up with these difficulties if hooks naturally lead to a great architecure, or gave you some other big advantage. However, I don't believe this is not the case. To explain why, I'll first have to explain a bit about state management.
+The drawbacks I've outlined above are major hinderances, but ones that can in principle be surmounted. It would be worth putting up with these difficulties if hooks naturally lead to a great architecture, or gave you some other big advantage. However, I don't believe this is the case. To explain why, I'll first have to explain a bit about state management.
 
 ### State Management
 
-Managing state is one of the central problems in programming. Every application must do it in some way. Over the years, every approach imaginable to UI state management has been tried. Two broad categories of architectures emerged: object oriented (OO), and functional.
+Managing state is one of the fundamental problems in programming. Every application must do it in some way. Over the years, every approach imaginable to UI state management has been tried. Two broad categories of architectures emerged: object oriented (OO), and functional.
 
-OO architectures include MVC/MVVM frameworks like Vue and Angular. It is characterised by storing state locally in components, and allowing it to be freely mutated. OO frameworks provide tools to manage this local state, and synchronise it between components. These include dependency injection, 2-way binding, services/factories, and event buses. Although I do think OOP has its flaws, when done well it does allow you to write relatively clear, testable code.
+OO architectures include MVC and MVVM frameworks like Vue and Angular. It is characterised by storing state locally in components, and allowing it to be freely mutated. OO frameworks provide tools to manage this local state, and synchronise it between components. These include dependency injection, 2-way binding, built in services/factories, and event buses. Although I do think OOP has its flaws, when done well it does allow you to write relatively clear, testable code.
 
-Functional architectures usually look something like the [Flux architecture](https://reactjs.org/blog/2014/05/06/flux.html) (although there are variations, such as [Purescript's Halogen](https://purescript-halogen.github.io/purescript-halogen/index.html)). They are characterised by keeping state outside of components, in as few places as possible. Mutations of this state are tightly controlled, usually using [CQRS](https://www.eventstore.com/cqrs-pattern). Components are ideally pure functions, which requires extracting side effects to another place in the code. Using this style of architecture makes it easy to write, debug, and test your application. Since pure functions are used as much as possible, your code becomes highly composable with loose coupling.
+Functional architectures usually look something like the [Flux architecture](https://reactjs.org/blog/2014/05/06/flux.html), as exemplified by [Redux](https://redux.js.org/). They are characterised by keeping state outside of components, in as few places as possible. Mutations of this state are tightly controlled, usually using [CQRS](https://www.eventstore.com/cqrs-pattern). Components are ideally pure functions, which requires extracting side effects to another place in the code. Using this style of architecture makes it easy to write, debug, and test your application. Since pure functions are used as much as possible, it allows you to write highly composable code with loose coupling.
 
 ### Not-so-modern React
 
@@ -173,9 +173,9 @@ It's readily apparent how similar the 2 snippets are. Aside from the template be
 
 As well as the similarity, it's interesting to note that the AngularJS code is shorter and more straightforward. The `ng-click` handler has a more natural and JS-like syntax than the `onClick` handler in React. It's also easier to test, because you can more easily mock the injected `$scope` than the global `useState`.
 
-Going beyond this toy example, AngularJS provided many tools and conveniences that React does not. AngularJS gave you dependency injection, which is completely missing from React. AngularJS also gave you 2-way binding (including with child components), a way of managing services and factories, and even an event bus in the form of `$emit`. These all helped you constrain the complexity inherent in using local state and side effects. It's also interesting to note that using multiple chained `$scope.$watch`s was always deemed an antipattern - a pattern which hooks encourage.
+Going beyond this toy example, AngularJS provided many tools and conveniences that React does not. AngularJS gave you dependency injection, which is completely missing from React. AngularJS also gave you 2-way binding (including with child components), a way of managing services and factories, and even an event bus in the form of `$emit`. These all helped you constrain the complexity inherent in using local state and side effects.
 
-To be clear, I'm not advocating that Google resurrect AngularJS. I'm just pointing out how much "modern" React resembles it. However, it seems to be missing several critical features that AngularJS provided. Why are these features missing? How have we gone _backwards_, in many ways, in the 10+ years since AngularJS was first released?
+To be clear I'm not advocating that Google resurrect AngularJS, or that it's better than React. I'm just pointing out how much "modern" React resembles it. However, it seems to be missing several critical features that AngularJS provided. Why are these features missing? How have we gone _backwards_, in many ways, in the 10+ years since AngularJS was first released?
 
 ## The Big Problem
 
@@ -185,7 +185,7 @@ I believe the root cause is that React was simply never intended to be used as a
 
 > React is a library for building composable user interfaces. It encourages the creation of reusable UI components which present data that changes over time.
 
-In other words, React just renders data to the page in an efficient way - nothing more. This is what React was intended for, and where it really shines. It should be used as one part, the view layer, of a larger application. Hooks don't change this. However, it's a distressingly common belief that hooks have turned React into a framework. This is incorrect.
+In other words, React just renders data to the page in an efficient way - nothing more. This is what React was intended for, and where it really shines. It should be used as one part, the view layer, of a larger application. Local state should only be used as a last resort, for behaviour that Hooks don't change any of this. However, it's a distressingly common belief that hooks have turned React into a framework. This is incorrect.
 
 ## A Better Way
 
@@ -197,7 +197,7 @@ It may be easier to use a framework, in which case you can't go far wrong with [
 
 It's more difficult to update an existing app to use a more OOP approach. However, for greenfield projects there are many great MVC/MVVM frameworks to choose from. [Angular](https://angular.io/) and [Vue](https://vuejs.org/) are very popular choices.
 
- If you'd like to try a different language, I'd recommend taking a look at either [Elm](https://elm-lang.org/) or ClojureScript's [re-frame](https://github.com/Day8/re-frame).
+If you'd like to try a different language, I'd recommend taking a look at either [Elm](https://elm-lang.org/) or ClojureScript's [re-frame](https://github.com/Day8/re-frame).
 
 ## Wrapping Up
 
