@@ -44,18 +44,20 @@ One solution is to:
 1. Query the current values of the attribute
 2. Diff them with the new values
 3. Use that diff to create transactions to:
-  1. Add any new values
-  2. Retract values we no longer want
-4. Apply the transactions using `d/transact`
+4. Add any new values
+5. Retract values we no longer want
+6. Apply the transactions using `d/transact`
 
 Here's the code to do this:
 
 ```clojure
 (defn update-attr-txs [db entity-id attr values]
   (let [;; Step 1
-        current-vals (-> (d/q '[:find [?p ...]
-                                :where [?id :intention/parents ?p]
-                                :in $ ?id]
+        current-vals (-> (d/q (vec
+                                (concat
+                                  '[:find [?a ...]]
+                                   [:where ['?id attr '?a]]
+                                  '[:in $ ?id]))
                               db
                               entity-id)
                          (set))
