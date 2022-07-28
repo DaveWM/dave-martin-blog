@@ -60,7 +60,7 @@ Here's the code to do this:
                                   '[:in $ ?id]))
                               db
                               entity-id)
-                         (set)) 
+                         (set))
         ;; Step 2
         [added removed] (clojure.data/diff (set values) current-vals)]
     ;; Step 3
