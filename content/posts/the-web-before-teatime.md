@@ -58,7 +58,7 @@ The resulting code for handling subscriptions looks like this:
 2. Initialise the subscription, for example create the entity being subscribed to if needed.
 3. Convert the subscription to a datalog query, and use it to query the DB
 4. Record the subscription in the sub->users atom
-5. Format the query result, and send it to the frontend
+5. Format the query result for the user, and send it to the frontend
 
 The transaction watcher looks something like this:
 
@@ -72,9 +72,16 @@ The transaction watcher looks something like this:
                (doseq [user users]
                  (server/chsk-send! ;; 4
                    user
-                   [:rps.server/push {:data (subs/format-for-user sub result user)
-                                      :sub  sub}])))))))
+                   [:server/push {:data (subs/format-for-user sub result user)
+                                  :sub  sub}])))))))
+
+1. Listen for transactions, using Datomic's [transaction report queue](https://docs.datomic.com/on-prem/transactions/transaction-processing.html#monitoring-transactions "Datomic Transaction Report Queue")
+2. Determine which current subscriptions are affected by the transaction
+3. For each affected subscription, query the database
+4. For each user for these subscriptions, format the result for the user and send it over the websocket
 
 There are, of course, some drawbacks to this architecture. The primary disadvantage is the amount of manual work involved, which leads to a possibility for error. The backend needs to be taught how to convert each subscription type to a datalog query, and also how to determine which subscriptions a transaction affects. When writing this code you have to be vigilant about performance, particularly in the transaction watcher. A naive transaction watcher that queries the DB per transaction per subscription will be unacceptably slow.
+
+### Conclusion
 
 If all this sounds appealing to you, I've created a template here that you can use. You can also take inspiration from the Rock Paper Scissors reference example. If you'd like to see it in action, you can play a game of rock paper scissors here. Thanks for reading!
