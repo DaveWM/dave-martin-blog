@@ -45,6 +45,36 @@ Another decision I made was to send full query results to the client, rather tha
 
 The basic architecture I ended up with is similar to the WAT architecture, but with several key differences. The front end sends a subscription to the backend, which records it in an atom. This subscription is not a datalog query, but instead a query DSL specific to your application. I used a basic tuple of \[:subscription-type entity-id\]. When a subscription is started, the backend immediately queries the DB, and pushes the entire query result back down to the client. Within the backend, there is a thread that is responsible for reacting to database transactions. It does this by monitoring Datomic's transaction report queue. This "transaction watcher" determines which subscriptions need to be updated, re-runs the queries for these subscriptions, then pushes the results to the subscribed clients. The front end is responsible for managing its own subscriptions, but subscriptions are automatically removed when the client disconnects.
 
+The resulting code for handling subscriptions looks like this:
+
+    (when (subs/authorised? sub user-id) ;; 1
+        (let [db (subs/init-sub! sub user-id (db/get-db)) ;; 2
+              result (subs/fetch-sub sub db)] ;; 3
+          (swap! sub->users* update sub (comp set conj) user-id) ;; 4
+          (reply-fn {:data (subs/format-for-user sub result user-id) ;; 5
+                     :sub  sub})))
+
+1. Check whether the user is allowed to make the subscription.
+2. Initialise the subscription, for example create the entity being subscribed to if needed.
+3. Convert the subscription to a datalog query, and use it to query the DB
+4. Record the subscription in the sub->users atom
+5. Format the query result, and send it to the frontend
+
+The transaction watcher looks something like this:
+
+    (Thread.
+      #(while true
+         (let [{:keys [db-after tx-data] :as evt} (.take (db/tx-queue)) ;; 1
+               affected-subs (subs/affected-subs (keys @sub->users*) evt tx-data)] ;; 2
+           (doseq [sub affected-subs]
+             (let [users (get @sub->users* sub)
+                   result (subs/fetch-sub sub db-after)] ;; 3
+               (doseq [user users]
+                 (server/chsk-send! ;; 4
+                   user
+                   [:rps.server/push {:data (subs/format-for-user sub result user)
+                                      :sub  sub}])))))))
+
 There are, of course, some drawbacks to this architecture. The primary disadvantage is the amount of manual work involved, which leads to a possibility for error. The backend needs to be taught how to convert each subscription type to a datalog query, and also how to determine which subscriptions a transaction affects. When writing this code you have to be vigilant about performance, particularly in the transaction watcher. A naive transaction watcher that queries the DB per transaction per subscription will be unacceptably slow.
 
 If all this sounds appealing to you, I've created a template here that you can use. You can also take inspiration from the Rock Paper Scissors reference example. If you'd like to see it in action, you can play a game of rock paper scissors here. Thanks for reading!
