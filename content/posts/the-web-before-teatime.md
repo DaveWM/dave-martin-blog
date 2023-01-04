@@ -35,7 +35,7 @@ One other major problem is guaranteeing consistency on the client. How do we gua
 
 In the face of these missing pieces, it's currently impossible to achieve the full "Web After Tomorrow" architecture. However, I found that with a couple of concessions you can get most of the way there.
 
-#### Workaround #1 - Introducing a Query DSL 
+#### Workaround #1 - Introducing a Query DSL
 
 I ended up introducing an application-specific DSL for subscriptions, as opposed to arbitrary datalog queries. The frontend sends subscriptions in this DSL, and then the backend translates it into a datalog query so it can query the DB. It also allows the transaction watcher to determine which transactions affect which subscriptions. After researching the topic, I quickly realised that there is still no realistic way to do streaming datalog queries. I had high hopes for the 3DF library, but it's sadly still in alpha and hasn't had a commit since 2019. For the rock paper scissors app, I found a tuple of \`\[:subscription-type id\]\` sufficed for this subscription DSL. One other advantage of having our own DSL is that subscriptions can be crafted to minimise the amount of unnecessary data sent to the client. Ideally, each subscriptions should return data that changes together, and at a similar rate. This allows us to minimise the inefficiency of transmitting the entire query result on each update. Also, it makes authorisation much easier.
 
@@ -46,8 +46,6 @@ Another decision I made was to send full query results to the client, rather tha
 ### The End Result
 
 The basic architecture I ended up with is similar to the WAT architecture, but with several key differences. The front end sends a subscription to the backend, which records it in an atom. This subscription is not a datalog query, but instead a query DSL specific to your application. I used a basic tuple of \[:subscription-type entity-id\]. When a subscription is started, the backend immediately queries the DB, and pushes the entire query result back down to the client. Within the backend, there is a thread that is responsible for reacting to database transactions. It does this by monitoring Datomic's transaction report queue. This "transaction watcher" determines which subscriptions need to be updated, re-runs the queries for these subscriptions, then pushes the results to the subscribed clients. The front end is responsible for managing its own subscriptions, but subscriptions are automatically removed when the client disconnects.
-
-todo: template
 
 There are, of course, some drawbacks to this architecture. The primary disadvantage is the amount of manual work involved, which leads to a possibility for error. The backend needs to be taught how to convert each subscription type to a datalog query, and also how to determine which subscriptions a transaction affects. When writing this code you have to be vigilant about performance, particularly in the transaction watcher. A naive transaction watcher that queries the DB per transaction per subscription will be unacceptably slow.
 
