@@ -7,11 +7,11 @@ title = "The Web Before Teatime"
 +++
 It's increasingly common for web applications to incorporate real-time elements. More and more, users expect the page to be updated instantly, without the need to refresh. Unfortunately, these features are often implemented as an afterthought. The dominant paradigm for the web is still request-response. This is well suited to fetching data on some client-side event (e.g. page loads, button clicks), but not for receiving real-time updates from the server. To work around this limitation, developers often resort to polling, or "sprinkle on" ad-hoc real-time events using a websocket. This inevitably leads to a buggy, inconsistent app that's difficult to work on. It's also common for different parts of the page will update at different frequencies. Perhaps some parts are completely static, some update on a fixed interval, and others update from websocket messages. This has been a problem since websockets were first implemented in browsers, back in 2011. Surely over 10 years later we can do better?
 
-One potential way forward is outlined in Nikita Prokopov's (a.k.a. Tonsky) seminal blog post "The Web After Tomorrow" (WAT). It was written in 2015, but is still highly prescient today. In it, Tonsky outlines a potential architecture for real-time web apps. The basic idea is that clients send queries to the backend, and then the query results are streamed back as a series of deltas (for example datomic's datoms). The front end uses these deltas to build up it's own "database" (e.g. re-frame's \`app-db\`), and then renders the page from that. This is a brilliant idea, if only it could be fully realised. Using this hypothetical framework you would only have to design your database schema, craft queries for the frontend data, then write the view layer. If this could be achieved in a reliable and performant way, it would be a game changer.
+One potential way forward is outlined in Nikita Prokopov's (a.k.a. Tonsky) seminal blog post "The Web After Tomorrow" (WAT). It was written in 2015, but is still highly prescient today. In it, Tonsky outlines a potential architecture for real-time web apps. The basic idea is that clients send queries to the backend, and then the query results are streamed back as a series of deltas (for example datomic's datoms). The front end uses these deltas to build up it's own "database" (e.g. re-frame's `app-db`), and then renders the page from that. This is a brilliant idea, if only it could be fully realised. Using this hypothetical framework you would only have to design your database schema, craft queries for the frontend data, then write the view layer. If this could be achieved in a reliable and performant way, it would be a game changer.
 
 There have been a few attempts to create this architecture over the past few years. One of these is the DatSync collection of libraries. Another is the 3DF client and library. However, both of these projects are unfinished and development appears to have stalled. Javascript's [Meteor](https://www.meteor.com/ "Meteor") solves a subset of the problem, but it doesn't get anywhere near the full solution. It allows the front end to respond to changes on a collection or a single document, but not to an arbitrary query. On the database side, there's very interesting work being done on databases like Materialize, KSQL DB, and RethinkDB, which offer streaming query results. However, they are all still fairly immature.
 
-This all started me wondering - how close can we get to "The Web After Tomorrow", today? Although there are still large missing pieces, I wanted to see if there was any practical way of working around them. The solution didn't have to be perfect, just an improvement on completely ad-hoc websocket messages. I decided to try building a simple real-time web app, getting as close to the WAT architecture, using technologies available today. Datomic has lots of cool features (history, forking, filtering) that aren't available in other DBs, so I wanted to use that. I wasn't aiming for a massively scalable architecture, but whatever I came up with had to perform reasonably well.
+This all started me wondering - how close can we get to "The Web After Tomorrow", today? Although there are still large missing pieces, I wanted to see if there was any practical way of working around them. The solution didn't have to be perfect, just an improvement on completely ad-hoc websocket messages. I decided to try building a simple real-time rock-paper-scissors web app, getting as close to the WAT architecture, using technologies available today. Datomic has lots of cool features (history, forking, filtering) that aren't available in other DBs, so I wanted to use that. I wasn't aiming for a massively scalable architecture, but whatever I came up with had to perform reasonably well.
 
 ### Missing Pieces
 
@@ -35,7 +35,7 @@ In the face of these missing pieces, it's currently impossible to achieve the fu
 
 #### Workaround #1 - Introducing a Query DSL
 
-I ended up introducing an application-specific DSL for subscriptions, as opposed to arbitrary datalog queries. The frontend sends subscriptions in this DSL, and then the backend translates it into a datalog query so it can query the DB. It also allows the transaction watcher to determine which transactions affect which subscriptions. After researching the topic, I quickly realised that there is still no realistic way to do streaming datalog queries. I had high hopes for the 3DF library, but it's sadly still in alpha and hasn't had a commit since 2019. For the rock paper scissors app, I found a tuple of \`\[:subscription-type id\]\` sufficed for this subscription DSL. One other advantage of having our own DSL is that subscriptions can be crafted to minimise the amount of unnecessary data sent to the client. Ideally, each subscriptions should return data that changes together, and at a similar rate. This allows us to minimise the inefficiency of transmitting the entire query result on each update. Also, it makes authorisation much easier.
+I ended up introducing an application-specific DSL for subscriptions, as opposed to arbitrary datalog queries. The frontend sends subscriptions in this DSL, and then the backend translates it into a datalog query so it can query the DB. It also allows the transaction watcher to determine which transactions affect which subscriptions. After researching the topic, I quickly realised that there is still no realistic way to do streaming datalog queries. I had high hopes for the 3DF library, but it's sadly still in alpha and hasn't had a commit since 2019. For my app, I found a tuple of `\[:subscription-type id\]` sufficed for this subscription DSL. One other advantage of having our own DSL is that subscriptions can be crafted to minimise the amount of unnecessary data sent to the client. Ideally, each subscriptions should return data that changes together, and at a similar rate. This allows us to minimise the inefficiency of transmitting the entire query result on each update. Also, it makes authorisation much easier.
 
 #### Workaround #2 - Sending Full Query Results
 
@@ -43,16 +43,22 @@ Another decision I made was to send full query results to the client, rather tha
 
 ### The End Result
 
-The basic architecture I ended up with is similar to the WAT architecture, but with several key differences. The front end sends a subscription to the backend, which records it in an atom. This subscription is not a datalog query, but instead a query DSL specific to your application. I used a basic tuple of \[:subscription-type entity-id\]. When a subscription is started, the backend immediately queries the DB, and pushes the entire query result back down to the client. Within the backend, there is a thread that is responsible for reacting to database transactions. It does this by monitoring Datomic's transaction report queue. This "transaction watcher" determines which subscriptions need to be updated, re-runs the queries for these subscriptions, then pushes the results to the subscribed clients. The front end is responsible for managing its own subscriptions, but subscriptions are automatically removed when the client disconnects.
+You can have a play around with the rock-paper-scissors app I created [here](https://dashing-cassata-0c0a30.netlify.app/). It looks like this:
+
+TODO: video
+
+The basic architecture I ended up with is similar to the WAT architecture, but with several key differences. The front end sends a subscription to the backend, which records it in an atom. This subscription is not a datalog query, but instead a query DSL specific to your application. I used a basic tuple of `[:subscription-type entity-id\]`. When a subscription is started, the backend immediately queries the DB, and pushes the entire query result back down to the client. Within the backend, there is a thread that is responsible for reacting to database transactions. It does this by monitoring Datomic's transaction report queue. This "transaction watcher" determines which subscriptions need to be updated, re-runs the queries for these subscriptions, then pushes the results to the subscribed clients. The front end is responsible for managing its own subscriptions, but subscriptions are automatically removed when the client disconnects.
 
 The resulting code for handling subscriptions looks like this:
 
+```clojure
     (when (subs/authorised? sub user-id) ;; 1
         (let [db (subs/init-sub! sub user-id (db/get-db)) ;; 2
               result (subs/fetch-sub sub db)] ;; 3
           (swap! sub->users* update sub (comp set conj) user-id) ;; 4
           (reply-fn {:data (subs/format-for-user sub result user-id) ;; 5
                      :sub  sub})))
+```
 
 1. Check whether the user is allowed to make the subscription.
 2. Initialise the subscription, for example create the entity being subscribed to if needed.
@@ -62,6 +68,7 @@ The resulting code for handling subscriptions looks like this:
 
 The transaction watcher looks something like this:
 
+```clojure
     (Thread.
       #(while true
          (let [{:keys [db-after tx-data] :as evt} (.take (db/tx-queue)) ;; 1
@@ -74,6 +81,7 @@ The transaction watcher looks something like this:
                    user
                    [:server/push {:data (subs/format-for-user sub result user)
                                   :sub  sub}])))))))
+```
 
 1. Listen for transactions, using Datomic's [transaction report queue](https://docs.datomic.com/on-prem/transactions/transaction-processing.html#monitoring-transactions "Datomic Transaction Report Queue")
 2. Determine which current subscriptions are affected by the transaction
