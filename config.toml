@@ -23,3 +23,6 @@ theme = "vienna"
     codeFences = false
     noHl = true
     style = ''
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
