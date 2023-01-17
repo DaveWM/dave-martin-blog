@@ -39,9 +39,9 @@ In the face of these missing pieces, it's currently impossible to achieve the fu
 
 One decision I made was to send full query results to the client, rather than datoms or deltas. There are a few reasons for this. The main reason is that it allows you to sidestep the "Consistency" problem mentioned above. The frontend's state now only depends on the latest query result, so you can be sure it's always correct (albeit perhaps out of date).
 
-Secondly, sending the first query result as a delta is a bit awkward. When the client first sends a query, it needs to know the whole query result. To do this you have to run the query, get the full result, then convert it to a sequence of deltas. While this is possible, it's a tad inelegant. 
+Secondly, sending the first query result as a delta is a bit awkward. When the client first sends a query, it needs to know the whole query result. To do this you have to run the query, get the full result, then convert it to a sequence of deltas. While this is possible, it's a tad inelegant.
 
-The third reason is that the client may need to be sent some data that is calculated on-the-fly on the server. Doing this as deltas is possible, but you must then draw a slightly awkward distinction between "DB" deltas and "calculated" deltas. 
+The third reason is that the client may need to be sent some data that is calculated on-the-fly on the server. Doing this as deltas is possible, but you must then draw a slightly awkward distinction between "DB" deltas and "calculated" deltas.
 
 The format of the deltas is also a pain point. Using [datoms](https://docs.datomic.com/cloud/whatis/data-model.html) is natural, but this essentially forces the client to use ClojureScript and [datascript](https://github.com/tonsky/datascript). There are other formats, like [JSON Patch](https://jsonpatch.com/), but these each have their own problems and tradeoffs.
 
@@ -49,15 +49,17 @@ The format of the deltas is also a pain point. Using [datoms](https://docs.datom
 
 I also ended up introducing an application-specific DSL for queries, as opposed to arbitrary datalog. The frontend sends queries in this DSL, and then the backend translates it into a datalog query which it passes to Datomic. Since queries are now far more constrained, the backend can more easily determine which transactions affect which running queries. For my app, I found a tuple of `[:query-type id]` sufficed for this query DSL. I called queries written in this DSL "subscriptions", to distinguish them from database queries.
 
-One other advantage of having our own DSL is that subscriptions can be crafted to minimise the amount of unnecessary data sent to the client. Ideally, each subscription should return data that changes together, and at a similar rate. This allows us to minimise the inefficiency of transmitting the entire query result on each update. 
+One other advantage of having our own DSL is that subscriptions can be crafted to minimise the amount of unnecessary data sent to the client. Ideally, each subscription should return data that changes together, and at a similar rate. This allows us to minimise the inefficiency of transmitting the entire query result on each update.
 
 This constrained query language also makes authorisation far easier. For example, let's say you're writing a todo app and have a subscription like `[:todo 1234]`. In this case, it's trivial to determine whether the todo `1234` belongs to the current user.
 
 ### The End Result
 
-You can check out the app I ended up with at [rock-paper-scissors.live](https://rock-paper-scissors.live) (source code [here](ttps://github.com/DaveWM/real-time-backend)). It looks like this:
+You can check out the app I ended up with at [rock-paper-scissors.live](https://rock-paper-scissors.live). It looks like this:
 
 ![](/rps-demo.gif)
+
+The source code for the backend is [here](https://github.com/DaveWM/rps-backend), and the frontend [here](https://github.com/DaveWM/rps-frontend).
 
 I've also created templates you can use to create your own app. There's [one for the frontend](https://github.com/DaveWM/real-time-frontend), and [another for the backend](https://github.com/DaveWM/real-time-backend). Just follow the instructions in the readmes to get started.
 
@@ -114,9 +116,8 @@ There are, of course, some drawbacks to this architecture. The primary disadvant
 ### Conclusion
 
 Unfortunately, it appears that we still have some way to go before we get to The Web After Tomorrow. There are several critical missing pieces, and progress appears to have slowed down recently. However, it is still possible to write a real-time app with a (fairly) minimal amount of effort. If you're looking to create your own app, I hope the templates I've provided are of some use - or at least give you some inspiration. If you have any comments or feedback, please feel free to [email me](mailto:mail@davemartin.me). Thanks for reading!
-  
-&nbsp;
 
+ 
 
 #### Links
 
@@ -128,5 +129,3 @@ Unfortunately, it appears that we still have some way to go before we get to The
   * [App](https://rock-paper-scissors.live)
   * [Backend source code](https://github.com/DaveWM/rps-backend)
   * [Frontend source code](https://github.com/DaveWM/rps-frontend)
-  
-
