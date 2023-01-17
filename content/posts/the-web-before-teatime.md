@@ -1,7 +1,6 @@
 +++
 date = 2023-01-16T00:00:00Z
 description = "An exploration of real-time reactive web apps using Clojure, Datomic, and websockets"
-draft = true
 title = "The Web Before Teatime"
 
 +++
