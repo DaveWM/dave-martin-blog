@@ -115,7 +115,7 @@ There are, of course, some drawbacks to this architecture. The primary disadvant
 
 ### Conclusion
 
-Unfortunately, it appears that we still have some way to go before we get to The Web After Tomorrow. There are several critical missing pieces, and progress appears to have slowed down recently. However, it is still possible to write a real-time app with a (fairly) minimal amount of effort. If you're looking to create your own app, I hope the templates I've provided are of some use - or at least give you some inspiration. If you have any comments or feedback, please feel free to [email me](mailto:mail@davemartin.me). Thanks for reading!
+Unfortunately, it appears that we still have some way to go before we get to _The Web After Tomorrow_. There are several critical missing pieces, and progress appears to have slowed down recently. However, it is still possible to write a real-time app with a (fairly) minimal amount of effort. If you're looking to create your own app, I hope the templates I've provided are of some use - or at least give you some inspiration. If you have any comments or feedback, please feel free to [email me](mailto:mail@davemartin.me). Thanks for reading!
 
  
 
