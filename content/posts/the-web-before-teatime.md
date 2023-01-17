@@ -1,5 +1,5 @@
 +++
-date = 2023-01-09T00:00:00Z
+date = 2023-01-16T00:00:00Z
 description = "An exploration of real-time reactive web apps using Clojure, Datomic, and websockets"
 draft = true
 title = "The Web Before Teatime"
@@ -9,7 +9,7 @@ It's increasingly common for web applications to incorporate real-time elements.
 
 One potential way forward is outlined in Nikita Prokopov's (a.k.a. Tonsky) seminal blog post ["The Web After Tomorrow" ](https://tonsky.me/blog/the-web-after-tomorrow/ "The Web After Tomorrow")(WAT). It was written in 2015, but is still highly prescient today. In it, Tonsky outlines a potential architecture for real-time web apps. The basic idea is that clients send queries to the backend, and then the query results are streamed back as a series of deltas (for example Datomic's [datoms](https://docs.datomic.com/cloud/whatis/data-model.html "Datomic Datoms")). The front end uses these deltas to populate its own "database" of application state, and then renders the page from that. This is a brilliant idea, if only it could be fully realised. Using this hypothetical framework you would only have to design your database schema, craft queries for the frontend data, then write the view layer. If this could be achieved in a reliable and performant way, it would be a game changer.
 
-There have been a few attempts to create this architecture over the past few years. One of these is the [DatSync](https://github.com/metasoarous/datsync "DatSync") collection of libraries. Another is the [3DF](https://github.com/sixthnormal/clj-3df "3DF") client and library. However, both of these projects are unfinished and development appears to have stalled. Javascript's [Meteor](https://www.meteor.com/ "Meteor") solves a subset of the problem, but it doesn't get anywhere near the full solution. On the database side, there's very interesting work being done on databases like [Materialize](https://materialize.com/ "Materialize DB"), [ksqlDB](https://ksqldb.io/ "ksqlDB") and [RethinkDB](https://rethinkdb.com/ "RethinkDB"), which offer streaming query results. However, they are all still fairly immature.
+There have been a few attempts to create this architecture over the past few years. One of these is the [DatSync](https://github.com/metasoarous/datsync "DatSync") collection of libraries. Another is the [3DF](https://github.com/sixthnormal/clj-3df "3DF") client and library. However, both of these projects are unfinished and development appears to have stalled. Javascript's [Meteor](https://www.meteor.com/ "Meteor") solves a subset of the problem, but it doesn't get anywhere near a complete solution. On the database side, there's very interesting work being done on databases like [Materialize](https://materialize.com/ "Materialize DB"), [ksqlDB](https://ksqldb.io/ "ksqlDB") and [RethinkDB](https://rethinkdb.com/ "RethinkDB"), which offer streaming query results. However, none of them use a suitable query language - you can't allow your frontend to execute arbitrary SQL statements. Also, they are all still fairly immature technologies.
 
 This all started me wondering - how close can we get to "The Web After Tomorrow", today? Although there are still large missing pieces, I wanted to see if there was any practical way of working around them. The solution didn't have to be perfect, just an improvement on today's standard of ad-hoc websocket messages.
 
@@ -21,7 +21,7 @@ I quickly determined that there are 3 major missing pieces:
 
 #### #1 - Streaming Queries
 
-Ideally, we want to be able to pass an arbitrary query to the database and have results stream back. When the database is updated in a way that affects the query, we want to know the new result. Unfortunately, very few databases offer this. The solution mentioned in "The Web After Tomorrow" is to create a "reversible" query language - one that can be used to query the database, but also to determine if a database transaction affects the query results. Although there has been [some progress](https://materialize.com/docs/sql/subscribe/) on this front, it's sadly missing from all mainstream databases.
+Ideally, we want to be able to pass an arbitrary query to the database and have results stream back. When the database is updated in a way that affects the query, we want to know the new result. Unfortunately, very few databases offer this. The solution mentioned in "The Web After Tomorrow" is to create a "reversible" query language - one that can be used to query the database, but also to determine if a database transaction affects the query results. Although there has been [some progress](https://materialize.com/docs/sql/subscribe/) on this front, it's sadly missing from all mainstream databases. Datomic allows you to monitor transactions using the [transaction report queue](https://blog.datomic.com/2013/10/the-transaction-report-queue.html), but there's no way to determine if a transaction affects an arbitrary query.
 
 #### #2 - Authorisation
 
@@ -37,29 +37,35 @@ In the face of these missing pieces, it's currently impossible to achieve the fu
 
 #### Workaround #1 - Sending Full Query Results
 
-One decision I made was to send full query results to the client, rather than datoms or deltas. There are a couple of reasons for this. The main reason is that sending query results as deltas requires that all messages reach the client, and that they arrive in order. This requires the aforementioned mechanism to guarantee this, which, as far as I could tell, nobody has built. Implementing a mechanism to do this is theoretically possible, but not practical. 
+One decision I made was to send full query results to the client, rather than datoms or deltas. There are a few reasons for this. The main reason is that it allows you to sidestep the "Consistency" problem mentioned above. The frontend's state now only depends on the latest query result, so you can be sure it's always correct (albeit perhaps out of date).
 
 Secondly, sending the first query result as a delta is a bit awkward. When the client first sends a query, it needs to know the whole query result. To do this you have to run the query, get the full result, then convert it to a sequence of deltas. While this is possible, it's a tad inelegant. 
 
-The third reason is that the client may need to be sent some data that is calculated on-the-fly on the server. Doing this as deltas is possible, but you must then draw a slightly awkward distinction between "DB" deltas and "calculated" deltas. The format of the deltas is also a pain point. Using datoms is natural, but this essentially forces the client to use ClojureScript and datascript. There are other formats, like [JSON Patch](https://jsonpatch.com/), but these each have their own problems and tradeoffs.
+The third reason is that the client may need to be sent some data that is calculated on-the-fly on the server. Doing this as deltas is possible, but you must then draw a slightly awkward distinction between "DB" deltas and "calculated" deltas. 
 
-One disadvantage of sending the entire query result on each change is that it can result in a large amount of unnecessary data transfer. However, if you're careful about how the queries are split up, you can minimise this unnecessary traffic.
+The format of the deltas is also a pain point. Using [datoms](https://docs.datomic.com/cloud/whatis/data-model.html) is natural, but this essentially forces the client to use ClojureScript and [datascript](https://github.com/tonsky/datascript). There are other formats, like [JSON Patch](https://jsonpatch.com/), but these each have their own problems and tradeoffs.
 
 #### Workaround #2 - Introducing a Query DSL
 
-I also ended up introducing an application-specific DSL for queries, as opposed to arbitrary datalog. The frontend sends queries in this DSL, and then the backend translates it into a datalog query which it passes to Datomic. Since queries are now far more constrained, the transaction watcher can determine which transactions affect which queries. For my app, I found a tuple of `[:query-type id]` sufficed for this query DSL. One other advantage of having our own DSL is that queries can be crafted to minimise the amount of unnecessary data sent to the client. Ideally, each query should return data that changes together, and at a similar rate. This allows us to minimise the inefficiency of transmitting the entire query result on each update. Also, it makes authorisation far easier.
+I also ended up introducing an application-specific DSL for queries, as opposed to arbitrary datalog. The frontend sends queries in this DSL, and then the backend translates it into a datalog query which it passes to Datomic. Since queries are now far more constrained, the backend can more easily determine which transactions affect which running queries. For my app, I found a tuple of `[:query-type id]` sufficed for this query DSL. I called queries written in this DSL "subscriptions", to distinguish them from database queries.
+
+One other advantage of having our own DSL is that subscriptions can be crafted to minimise the amount of unnecessary data sent to the client. Ideally, each subscription should return data that changes together, and at a similar rate. This allows us to minimise the inefficiency of transmitting the entire query result on each update. 
+
+This constrained query language also makes authorisation far easier. For example, let's say you're writing a todo app and have a subscription like `[:todo 1234]`. In this case, it's trivial to determine whether the todo `1234` belongs to the current user.
 
 ### The End Result
 
-You can check out the app I ended up with at [rock-paper-scissors.live](https://rock-paper-scissors.live). It looks like this:
+You can check out the app I ended up with at [rock-paper-scissors.live](https://rock-paper-scissors.live) (source code [here](ttps://github.com/DaveWM/real-time-backend)). It looks like this:
 
 ![](/rps-demo.gif)
 
 I've also created templates you can use to create your own app. There's [one for the frontend](https://github.com/DaveWM/real-time-frontend), and [another for the backend](https://github.com/DaveWM/real-time-backend). Just follow the instructions in the readmes to get started.
 
-The basic architecture I ended up with is broadly similar to the WAT architecture, but with several key differences. The front end sends a query to the backend, which records it in an atom. This query is not a datalog query, but instead a query DSL specific to your application. I used a basic tuple of `[:query-type entity-id]`, like `[:game 1234]` or `[:player "Dave"]`. When a query is first sent, the backend immediately queries the DB, and pushes the entire query result back down to the client. So far, so easy...
+The basic architecture I ended up with is broadly similar to the WAT architecture, but with several key differences. The front end sends a subscription to the backend, which records it in an atom. As discussed previously, this subscription is written in a DSL rather than datalog. I used a basic tuple of `[:query-type entity-id]`, like `[:game 1234]` or `[:player "Bob"]`. When a query is first sent, the backend immediately queries the DB, and pushes the entire query result back down to the client. So far, so easy...
 
-Now for the tricky part! Within the backend, there is a thread that is responsible for reacting to database transactions. It does this by monitoring Datomic's [transaction report queue](https://blog.datomic.com/2013/10/the-transaction-report-queue.html). This "transaction watcher" determines which subscriptions need to be updated, re-runs the queries for these subscriptions, then pushes the results to the subscribed clients. Since this logic has to be hand-coded, it unfortunately requires a fair bit of manual work. The flip side is it allows you make lots of assumptions to improve performance. For example, in my rock-paper-scissors app, I made the assumption that a transaction could only affect one game. The front end is responsible for managing its own subscriptions, but subscriptions are automatically removed when the client disconnects.
+Now for the tricky bit! Within the backend, there is a thread that is responsible for reacting to database transactions. It does this by monitoring Datomic's [transaction report queue](https://blog.datomic.com/2013/10/the-transaction-report-queue.html). This "transaction watcher" determines which subscriptions need to be updated, re-runs the queries for these subscriptions, then pushes the results to the subscribed clients. Since this logic has to be hand-coded, it unfortunately requires a fair bit of manual work. The flip side is it allows you make lots of assumptions to improve performance. For example, in my app I made the assumption that a single transaction could only affect one game.
+
+The front end is responsible for managing its own subscriptions (e.g. unsubscribing when the user navigates off a page), but subscriptions are automatically removed when the client disconnects.
 
 The resulting code for handling subscriptions looks like this:
 
@@ -72,7 +78,7 @@ The resulting code for handling subscriptions looks like this:
                :sub  sub})))
 ```
 
-1. Check whether the user is allowed to make the subscription.
+1. Check whether the user is allowed to subscribe.
 2. Initialise the subscription, for example create the entity being subscribed to if needed.
 3. Convert the subscription to a datalog query, and use it to query the DB
 4. Record the subscription in the sub->users atom
@@ -107,7 +113,7 @@ There are, of course, some drawbacks to this architecture. The primary disadvant
 
 ### Conclusion
 
-Unfortunately, it appears that we still have some way to go before we get to The Web After Tomorrow. There are several critical missing pieces, and progress appears to have slowed down recently. However, it is still possible to write a real-time app with a (fairly) minimal amount of effort. If you're looking to create your own app, I hope the templates I've provided are of some use - or at least provide you some inspiration. If you have any comments or feedback, please [email me](mailto:mail@davemartin.me). Thanks for reading!
+Unfortunately, it appears that we still have some way to go before we get to The Web After Tomorrow. There are several critical missing pieces, and progress appears to have slowed down recently. However, it is still possible to write a real-time app with a (fairly) minimal amount of effort. If you're looking to create your own app, I hope the templates I've provided are of some use - or at least give you some inspiration. If you have any comments or feedback, please feel free to [email me](mailto:mail@davemartin.me). Thanks for reading!
   
 &nbsp;
 
